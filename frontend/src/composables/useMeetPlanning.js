@@ -42,7 +42,7 @@ export function useMeetPlanning() {
   const notificationSearch = ref('');
   const notificationFilter = ref('all');
 
-  const loginForm = reactive({ email: 'admin@meetplanning.local', password: 'admin1234' });
+  const loginForm = reactive({ email: '', password: '' });
   const registerForm = reactive({ name: '', email: '', password: '', department: '' });
   const searchForm = reactive({ keyword: '', date: today(), start: '09:00', end: '10:00', capacity: 4, branchId: '', building: '', equipment: [] });
   const bookingForm = reactive({ title: '', purpose: '', attendeeCount: 4, requesterPhone: '', note: '' });
@@ -138,10 +138,15 @@ export function useMeetPlanning() {
   }
 
   async function loadDashboard() {
+    const emptyDashboard = { roomsReady: 0, todayBookings: 0, unread: 0, upcoming: [] };
+    if (!session.value?.token) {
+      dashboard.value = emptyDashboard;
+      return;
+    }
     try {
-      dashboard.value = { roomsReady: 0, todayBookings: 0, unread: 0, upcoming: [], ...(await api('/dashboard')) };
+      dashboard.value = { ...emptyDashboard, ...(await api('/dashboard')) };
     } catch {
-      dashboard.value = { roomsReady: 0, todayBookings: 0, unread: 0, upcoming: [] };
+      dashboard.value = emptyDashboard;
     }
   }
 
@@ -497,14 +502,16 @@ export function useMeetPlanning() {
 
   async function boot() {
     await loadMeta();
-    await loadDashboard();
     await searchRooms();
-    if (session.value) {
+    if (session.value?.token) {
+      await loadDashboard();
       await Promise.all([
         loadProfile(),
         loadNotifications(true),
         isAdmin.value ? loadBookings() : loadMyBookings(),
       ]);
+    } else {
+      dashboard.value = { roomsReady: 0, todayBookings: 0, unread: 0, upcoming: [] };
     }
   }
 
