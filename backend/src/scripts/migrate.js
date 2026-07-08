@@ -17,6 +17,16 @@ const upgradeFiles = [
   'fix_notification_role_visibility.sql'
 ];
 
+const safeDuplicateErrorCodes = new Set([
+  'ER_DUP_FIELDNAME',
+  'ER_DUP_KEYNAME',
+  'ER_FK_DUP_NAME',
+  'ER_DUP_ENTRY',
+  'ER_CANT_DROP_FIELD_OR_KEY'
+]);
+
+const safeDuplicateErrnos = new Set([1060, 1061, 1062, 1091, 1826]);
+
 function findSqlFile(name) {
   const candidates = [
     path.join(backendRoot, 'database', name),
@@ -27,8 +37,59 @@ function findSqlFile(name) {
 
 function cleanRailwayUnsafeSql(sql) {
   return sql
-    .replace(/CREATE\\s+DATABASE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?[\\`\\w-]+(?:\\s+[^;]*)?;/gi, '')
-    .replace(/USE\\s+[\\`\\w-]+\\s*;?/gi, '');
+    .replace(/CREATE\s+DATABASE\s+(?:IF\s+NOT\s+EXISTS\s+)?[\`\w-]+(?:\s+[^;]*)?;/gi, '')
+    .replace(/USE\s+[\`\w-]+\s*;?/gi, '')
+    .replace(/ADD\s+COLUMN\s+IF\s+NOT\s+EXISTS/gi, 'ADD COLUMN')
+    .replace(/ADD\s+INDEX\s+IF\s+NOT\s+EXISTS/gi, 'ADD INDEX')
+    .replace(/ADD\s+KEY\s+IF\s+NOT\s+EXISTS/gi, 'ADD KEY');
+}
+
+function splitSqlStatements(sql) {
+  const statements = [];
+  let current = '';
+  let quote = null;
+
+  for (let index = 0; index < sql.length; index += 1) {
+    const char = sql[index];
+    const next = sql[index + 1];
+
+    if (!quote && char === '-' && next === '-') {
+      while (index < sql.length && sql[index] !== '\n') index += 1;
+      current += '\n';
+      continue;
+    }
+
+    if (!quote && char === '#') {
+      while (index < sql.length && sql[index] !== '\n') index += 1;
+      current += '\n';
+      continue;
+    }
+
+    if (!quote && char === '/' && next === '*') {
+      index += 2;
+      while (index < sql.length && !(sql[index] === '*' && sql[index + 1] === '/')) index += 1;
+      index += 1;
+      continue;
+    }
+
+    if ((char === "'" || char === '"' || char === '`') && sql[index - 1] !== '\\') {
+      if (quote === char) quote = null;
+      else if (!quote) quote = char;
+    }
+
+    if (char === ';' && !quote) {
+      const trimmed = current.trim();
+      if (trimmed) statements.push(trimmed);
+      current = '';
+      continue;
+    }
+
+    current += char;
+  }
+
+  const trimmed = current.trim();
+  if (trimmed) statements.push(trimmed);
+  return statements;
 }
 
 async function tableExists(name) {
@@ -44,6 +105,10 @@ async function hasCoreTables() {
     if (!(await tableExists(table))) return false;
   }
   return true;
+}
+
+function isIgnorableMigrationError(error) {
+  return safeDuplicateErrorCodes.has(error.code) || safeDuplicateErrnos.has(error.errno);
 }
 
 async function runSqlFile(name, required = false) {
@@ -63,7 +128,19 @@ async function runSqlFile(name, required = false) {
   }
 
   console.log('running', path.relative(process.cwd(), file).replace(/\\/g, '/'));
-  await pool.query(sql);
+  const statements = splitSqlStatements(sql);
+  for (const statement of statements) {
+    try {
+      await pool.query(statement);
+    } catch (error) {
+      if (isIgnorableMigrationError(error)) {
+        console.log('skip already applied:', error.code || error.errno);
+        continue;
+      }
+      error.sql = statement;
+      throw error;
+    }
+  }
 }
 
 async function main() {
