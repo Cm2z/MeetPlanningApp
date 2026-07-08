@@ -13,7 +13,27 @@ const app = express();
 const port = Number(process.env.PORT || 4000);
 
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173' }));
+const allowedOrigins = [
+  process.env.CLIENT_ORIGIN,
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'https://amiable-gentleness-production-9407.up.railway.app'
+].filter(Boolean).map((origin) => origin.replace(/\/$/, ''));
+
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin) return callback(null, true);
+    const cleanOrigin = origin.replace(/\/$/, '');
+    const isAllowed =
+      allowedOrigins.includes(cleanOrigin) ||
+      /^https:\/\/amiable-gentleness.*\.up\.railway\.app$/.test(cleanOrigin);
+
+    if (isAllowed) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('dev'));
 
