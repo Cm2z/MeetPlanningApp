@@ -1,29 +1,136 @@
 
 import { Router } from 'express';
 import { pool } from '../config/db.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requireRole } from '../middleware/auth.js';
 
 const router = Router();
-router.use(requireAuth);
+const ADMIN_DELETE_CODE = process.env.ADMIN_DELETE_CODE || '1234';
 
-router.get('/', async (req, res, next) => {
+function toInt(value, fallback, min, max) {
+  const parsed = Number.parseInt(value, 10);
+  if (Number.isNaN(parsed)) return fallback;
+  return Math.min(Math.max(parsed, min), max);
+}
+
+async function ensureNotificationColumns() {
   try {
-    const [rows] = await pool.execute(
-      'SELECT * FROM notifications WHERE user_id = ? OR role_target = ? OR role_target = "all" ORDER BY created_at DESC LIMIT 80',
-      [req.user.id, req.user.role]
+    await pool.execute('ALTER TABLE notifications ADD COLUMN user_deleted_at DATETIME NULL');
+  } catch {}
+}
+
+function accessWhere(req) {
+  if (req.user.role === 'admin' || req.user.role === 'staff') {
+    return { where: "(user_id = ? OR role_target IN ('admin','staff','admin_staff'))", params: [req.user.id] };
+  }
+  return { where: 'user_id = ? AND user_deleted_at IS NULL', params: [req.user.id] };
+}
+
+function assertAdminDelete(req) {
+  if (req.user.role !== 'admin') {
+    const error = new Error('เฉพาะผู้ดูแลระบบเท่านั้น');
+    error.status = 403;
+    throw error;
+  }
+  if (String(req.body?.deleteCode || '') !== ADMIN_DELETE_CODE) {
+    const error = new Error('รหัสยืนยันการลบไม่ถูกต้อง');
+    error.status = 403;
+    throw error;
+  }
+}
+
+router.get('/', requireAuth, async (req, res, next) => {
+  try {
+    await ensureNotificationColumns();
+    const page = toInt(req.query.page, 1, 1, 100000);
+    const limit = toInt(req.query.limit, 30, 1, 80);
+    const offset = (page - 1) * limit;
+    const access = accessWhere(req);
+    const conditions = [access.where];
+    const params = [...access.params];
+
+    if (req.query.unread === 'true') conditions.push('is_read = 0');
+    if (req.query.q) {
+      conditions.push('(title LIKE ? OR message LIKE ?)');
+      params.push('%' + req.query.q + '%', '%' + req.query.q + '%');
+    }
+
+    const where = conditions.join(' AND ');
+    const [[countRow]] = await pool.execute(
+      'SELECT COUNT(*) AS total, SUM(CASE WHEN is_read = 0 THEN 1 ELSE 0 END) AS unread_count FROM notifications WHERE ' + where,
+      params
     );
-    res.json(rows);
-  } catch (error) { next(error); }
+    const [rows] = await pool.execute(
+      'SELECT id, user_id, role_target, title, message, link, is_read, created_at FROM notifications WHERE ' + where + ' ORDER BY created_at DESC LIMIT ? OFFSET ?',
+      [...params, limit, offset]
+    );
+
+    res.json({
+      data: rows,
+      page,
+      limit,
+      total: Number(countRow.total || 0),
+      unreadCount: Number(countRow.unread_count || 0),
+      hasMore: offset + rows.length < Number(countRow.total || 0),
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
-router.patch('/:id/read', async (req, res, next) => {
+router.patch('/:id/read', requireAuth, async (req, res, next) => {
   try {
-    await pool.execute(
-      'UPDATE notifications SET is_read = 1 WHERE id = ? AND (user_id = ? OR role_target = ? OR role_target = "all")',
-      [req.params.id, req.user.id, req.user.role]
+    await ensureNotificationColumns();
+    const access = accessWhere(req);
+    await pool.execute('UPDATE notifications SET is_read = 1 WHERE id = ? AND ' + access.where, [req.params.id, ...access.params]);
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/read-all', requireAuth, async (req, res, next) => {
+  try {
+    await ensureNotificationColumns();
+    const access = accessWhere(req);
+    await pool.execute('UPDATE notifications SET is_read = 1 WHERE ' + access.where, access.params);
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete('/:id', requireAuth, async (req, res, next) => {
+  try {
+    await ensureNotificationColumns();
+    if (req.user.role === 'admin') {
+      assertAdminDelete(req);
+      const [result] = await pool.execute('DELETE FROM notifications WHERE id = ?', [req.params.id]);
+      return res.json({ ok: true, deleted: result.affectedRows });
+    }
+    const [result] = await pool.execute(
+      'UPDATE notifications SET user_deleted_at = NOW() WHERE id = ? AND user_id = ?',
+      [req.params.id, req.user.id]
     );
-    res.json({ message: 'Notification read' });
-  } catch (error) { next(error); }
+    res.json({ ok: true, deleted: result.affectedRows });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/bulk-delete', requireAuth, requireRole('admin'), async (req, res, next) => {
+  try {
+    await ensureNotificationColumns();
+    assertAdminDelete(req);
+    const ids = Array.isArray(req.body?.ids)
+      ? req.body.ids.map((id) => Number.parseInt(id, 10)).filter((id) => Number.isInteger(id) && id > 0)
+      : [];
+    if (!ids.length) return res.status(422).json({ message: 'ไม่พบรายการที่ต้องการลบ' });
+    const placeholders = ids.map(() => '?').join(',');
+    const [result] = await pool.execute('DELETE FROM notifications WHERE id IN (' + placeholders + ')', ids);
+    res.json({ ok: true, deleted: result.affectedRows });
+  } catch (error) {
+    next(error);
+  }
 });
 
 export default router;

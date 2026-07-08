@@ -1,0 +1,8 @@
+
+cd P:\MeetPlanning
+git init
+git add .
+git commit -m "Initial MeetPlanning app"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/meetplanning.git
+git push -u origin main

@@ -6,6 +6,67 @@ import { requireAuth, requireRole } from '../middleware/auth.js';
 import { audit, notify } from '../utils/activity.js';
 
 const router = Router();
+
+// FINAL_SECURE_BOOKINGS_GET_ROUTE
+router.get('/', requireAuth, async (req, res, next) => {
+  try {
+    const params = [];
+    const whereParts = ['1=1'];
+    const canSeeAll = req.user.role === 'admin' || req.user.role === 'staff';
+
+    if (!canSeeAll) {
+      whereParts.push('b.user_id = ?');
+      params.push(req.user.id);
+    } else if (req.query.mine === 'true') {
+      whereParts.push('b.user_id = ?');
+      params.push(req.user.id);
+    }
+
+    if (req.query.status) {
+      whereParts.push('b.status = ?');
+      params.push(req.query.status);
+    }
+    if (req.query.from) {
+      whereParts.push('b.end_at >= ?');
+      params.push(req.query.from);
+    }
+    if (req.query.to) {
+      whereParts.push('b.start_at <= ?');
+      params.push(req.query.to);
+    }
+    if (req.query.branchId) {
+      whereParts.push('r.branch_id = ?');
+      params.push(req.query.branchId);
+    }
+    if (req.query.roomId) {
+      whereParts.push('r.id = ?');
+      params.push(req.query.roomId);
+    }
+    if (req.query.requester && canSeeAll) {
+      whereParts.push('u.name LIKE ?');
+      params.push('%' + req.query.requester + '%');
+    }
+
+    const [rows] = await pool.execute(
+      'SELECT b.*, r.name AS room_name, r.building, r.floor, br.name AS branch_name, u.name AS requester_name, approver.name AS approver_name ' +
+      'FROM bookings b ' +
+      'JOIN rooms r ON r.id = b.room_id ' +
+      'LEFT JOIN branches br ON br.id = r.branch_id ' +
+      'JOIN users u ON u.id = b.user_id ' +
+      'LEFT JOIN users approver ON approver.id = b.approved_by ' +
+      'WHERE ' + whereParts.join(' AND ') + ' ORDER BY b.start_at DESC LIMIT 300',
+      params
+    );
+
+    res.json(rows.map((row) => ({
+      ...row,
+      can_check_in: row.status === 'approved' && typeof canCheckIn === 'function' ? canCheckIn(row.start_at, row.end_at) : false,
+    })));
+  } catch (error) {
+    next(error);
+  }
+});
+
 const allowedStatuses = ['pending','approved','rejected','cancelled','checked_in','completed','no_show'];
 
 async function hasConflict(roomId, startAt, endAt) {
@@ -22,11 +83,19 @@ function hoursBetween(startAt, endAt) {
   return (new Date(endAt).getTime() - new Date(startAt).getTime()) / 3600000;
 }
 
+function canCheckIn(startAt, endAt) {
+  const now = new Date();
+  const start = new Date(startAt);
+  const end = new Date(endAt);
+  const openAt = new Date(start.getTime() - 15 * 60 * 1000);
+  return now >= openAt && now <= end;
+}
+
 router.get('/', requireAuth, async (req, res, next) => {
   try {
     const params = [];
     let where = '1=1';
-    if (req.query.mine === 'true') { where += ' AND b.user_id = ?'; params.push(req.user.id); }
+    if (req.user.role !== 'admin' && req.user.role !== 'staff') { where += ' AND b.user_id = ?'; params.push(req.user.id); } else if (req.query.mine === 'true') { where += ' AND b.user_id = ?'; params.push(req.user.id); }
     if (req.query.status) { where += ' AND b.status = ?'; params.push(req.query.status); }
     if (req.query.from) { where += ' AND b.end_at >= ?'; params.push(req.query.from); }
     if (req.query.to) { where += ' AND b.start_at <= ?'; params.push(req.query.to); }
@@ -34,7 +103,7 @@ router.get('/', requireAuth, async (req, res, next) => {
     if (req.query.roomId) { where += ' AND r.id = ?'; params.push(req.query.roomId); }
     if (req.query.requester) { where += ' AND u.name LIKE ?'; params.push('%' + req.query.requester + '%'); }
     const [rows] = await pool.execute('SELECT b.*, r.name AS room_name, r.building, r.floor, br.name AS branch_name, u.name AS requester_name, approver.name AS approver_name FROM bookings b JOIN rooms r ON r.id=b.room_id LEFT JOIN branches br ON br.id=r.branch_id JOIN users u ON u.id=b.user_id LEFT JOIN users approver ON approver.id=b.approved_by WHERE ' + where + ' ORDER BY b.start_at DESC LIMIT 300', params);
-    res.json(rows);
+    res.json(rows.map((row) => ({ ...row, can_check_in: row.status === 'approved' && canCheckIn(row.start_at, row.end_at) })));
   } catch (error) { next(error); }
 });
 
@@ -68,8 +137,8 @@ router.post('/', requireAuth, body('roomId').isInt({ min: 1 }), body('title').no
     }
     await connection.commit();
     await audit(req.user.id, 'create_booking', 'booking', result.insertId, { title, roomId, startAt, endAt });
-    await notify({ roleTarget: 'admin', title: 'มีคำขอจองใหม่', message: title, link: '/bookings' });
-    await notify({ roleTarget: 'staff', title: 'มีคำขอจองใหม่', message: title, link: '/bookings' });
+    await notify({ roleTarget: 'admin', title: 'มีคำขอจองใหม่', message: req.user.name + ': ' + title, link: '/bookings' });
+    await notify({ roleTarget: 'staff', title: 'มีคำขอจองใหม่', message: req.user.name + ': ' + title, link: '/bookings' });
     res.status(201).json({ id: result.insertId, message: 'ส่งคำขอจองห้องเรียบร้อย' });
   } catch (error) { await connection.rollback(); next(error); } finally { connection.release(); }
 });
@@ -78,13 +147,39 @@ router.patch('/:id/status', requireAuth, requireRole('admin', 'staff'), async (r
   try {
     const { status } = req.body;
     if (!allowedStatuses.includes(status)) return res.status(422).json({ message: 'สถานะไม่ถูกต้อง' });
-    const [[booking]] = await pool.execute('SELECT user_id, title FROM bookings WHERE id = ?', [req.params.id]);
+    const [[booking]] = await pool.execute('SELECT b.user_id, b.title, b.start_at, b.end_at, r.name AS room_name FROM bookings b JOIN rooms r ON r.id=b.room_id WHERE b.id = ?', [req.params.id]);
     const extra = status === 'approved' ? ', approved_by = ?, approved_at = NOW()' : status === 'checked_in' ? ', checked_in_at = NOW()' : status === 'completed' ? ', completed_at = NOW()' : '';
     const params = status === 'approved' ? [status, req.user.id, req.params.id] : [status, req.params.id];
     await pool.execute('UPDATE bookings SET status = ?' + extra + ' WHERE id = ?', params);
     await audit(req.user.id, 'update_booking_status', 'booking', req.params.id, { status });
-    if (booking) await notify({ userId: booking.user_id, title: 'อัปเดตสถานะการจอง', message: booking.title + ' : ' + status, link: '/bookings' });
+    if (booking) {
+      if (status === 'approved') {
+        await notify({
+          userId: booking.user_id,
+          title: 'การจองห้องได้รับการอนุมัติแล้ว',
+          message: 'ห้อง ' + booking.room_name + ' สำหรับ "' + booking.title + '" ได้รับการอนุมัติแล้ว สามารถกด Check-in ได้เมื่อถึงวันเวลาที่จองไว้ตามกำหนด',
+          link: '/history'
+        });
+      } else if (status === 'rejected') {
+        await notify({ userId: booking.user_id, title: 'การจองห้องถูกปฏิเสธ', message: booking.title, link: '/history' });
+      } else {
+        await notify({ userId: booking.user_id, title: 'อัปเดตสถานะการจอง', message: booking.title + ' : ' + status, link: '/history' });
+      }
+    }
     res.json({ message: 'อัปเดตสถานะเรียบร้อย' });
+  } catch (error) { next(error); }
+});
+
+router.patch('/:id/check-in', requireAuth, async (req, res, next) => {
+  try {
+    const [[booking]] = await pool.execute('SELECT id, user_id, title, start_at, end_at, status FROM bookings WHERE id = ?', [req.params.id]);
+    if (!booking) return res.status(404).json({ message: 'ไม่พบรายการจอง' });
+    if (booking.user_id !== req.user.id && !['admin', 'staff'].includes(req.user.role)) return res.status(403).json({ message: 'ไม่มีสิทธิ์ Check-in รายการนี้' });
+    if (booking.status !== 'approved') return res.status(422).json({ message: 'รายการนี้ยังไม่พร้อม Check-in' });
+    if (!canCheckIn(booking.start_at, booking.end_at)) return res.status(422).json({ message: 'ยังไม่ถึงเวลา Check-in สามารถกดได้ก่อนเวลาเริ่ม 15 นาทีถึงเวลาสิ้นสุด' });
+    await pool.execute('UPDATE bookings SET status = "checked_in", checked_in_at = NOW() WHERE id = ?', [req.params.id]);
+    await audit(req.user.id, 'user_check_in', 'booking', req.params.id, {});
+    res.json({ message: 'Check-in สำเร็จ' });
   } catch (error) { next(error); }
 });
 
