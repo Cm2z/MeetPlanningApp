@@ -27,8 +27,8 @@ function findSqlFile(name) {
 
 function cleanRailwayUnsafeSql(sql) {
   return sql
-    .replace(/CREATE\s+DATABASE\s+(?:IF\s+NOT\s+EXISTS\s+)?[\`\w-]+\s*;?/gi, '')
-    .replace(/USE\s+[\`\w-]+\s*;?/gi, '');
+    .replace(/CREATE\\s+DATABASE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?[\\`\\w-]+(?:\\s+[^;]*)?;/gi, '')
+    .replace(/USE\\s+[\\`\\w-]+\\s*;?/gi, '');
 }
 
 async function tableExists(name) {
