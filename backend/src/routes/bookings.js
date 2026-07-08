@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import { pool } from '../config/db.js';
@@ -6,71 +5,25 @@ import { requireAuth, requireRole } from '../middleware/auth.js';
 import { audit, notify } from '../utils/activity.js';
 
 const router = Router();
-
-// FINAL_SECURE_BOOKINGS_GET_ROUTE
-router.get('/', requireAuth, async (req, res, next) => {
-  try {
-    const params = [];
-    const whereParts = ['1=1'];
-    const canSeeAll = req.user.role === 'admin' || req.user.role === 'staff';
-
-    if (!canSeeAll) {
-      whereParts.push('b.user_id = ?');
-      params.push(req.user.id);
-    } else if (req.query.mine === 'true') {
-      whereParts.push('b.user_id = ?');
-      params.push(req.user.id);
-    }
-
-    if (req.query.status) {
-      whereParts.push('b.status = ?');
-      params.push(req.query.status);
-    }
-    if (req.query.from) {
-      whereParts.push('b.end_at >= ?');
-      params.push(req.query.from);
-    }
-    if (req.query.to) {
-      whereParts.push('b.start_at <= ?');
-      params.push(req.query.to);
-    }
-    if (req.query.branchId) {
-      whereParts.push('r.branch_id = ?');
-      params.push(req.query.branchId);
-    }
-    if (req.query.roomId) {
-      whereParts.push('r.id = ?');
-      params.push(req.query.roomId);
-    }
-    if (req.query.requester && canSeeAll) {
-      whereParts.push('u.name LIKE ?');
-      params.push('%' + req.query.requester + '%');
-    }
-
-    const [rows] = await pool.execute(
-      'SELECT b.*, r.name AS room_name, r.building, r.floor, br.name AS branch_name, u.name AS requester_name, approver.name AS approver_name ' +
-      'FROM bookings b ' +
-      'JOIN rooms r ON r.id = b.room_id ' +
-      'LEFT JOIN branches br ON br.id = r.branch_id ' +
-      'JOIN users u ON u.id = b.user_id ' +
-      'LEFT JOIN users approver ON approver.id = b.approved_by ' +
-      'WHERE ' + whereParts.join(' AND ') + ' ORDER BY b.start_at DESC LIMIT 300',
-      params
-    );
-
-    res.json(rows.map((row) => ({
-      ...row,
-      can_check_in: row.status === 'approved' && typeof canCheckIn === 'function' ? canCheckIn(row.start_at, row.end_at) : false,
-    })));
-  } catch (error) {
-    next(error);
-  }
-});
-
 const allowedStatuses = ['pending','approved','rejected','cancelled','checked_in','completed','no_show'];
 
+function canSeeAllBookings(user) {
+  return user?.role === 'admin' || user?.role === 'staff';
+}
+
+function canCheckIn(startAt, endAt) {
+  const now = new Date();
+  const start = new Date(startAt);
+  const end = new Date(endAt);
+  const openAt = new Date(start.getTime() - 15 * 60 * 1000);
+  return now >= openAt && now <= end;
+}
+
 async function hasConflict(roomId, startAt, endAt) {
-  const [rows] = await pool.execute("SELECT id FROM bookings WHERE room_id = ? AND status IN ('pending','approved','checked_in') AND ? < end_at AND ? > start_at LIMIT 1", [roomId, startAt, endAt]);
+  const [rows] = await pool.execute(
+    "SELECT id FROM bookings WHERE room_id = ? AND status IN ('pending','approved','checked_in') AND ? < end_at AND ? > start_at LIMIT 1",
+    [roomId, startAt, endAt]
+  );
   return rows.length > 0;
 }
 
@@ -83,28 +36,60 @@ function hoursBetween(startAt, endAt) {
   return (new Date(endAt).getTime() - new Date(startAt).getTime()) / 3600000;
 }
 
-function canCheckIn(startAt, endAt) {
-  const now = new Date();
-  const start = new Date(startAt);
-  const end = new Date(endAt);
-  const openAt = new Date(start.getTime() - 15 * 60 * 1000);
-  return now >= openAt && now <= end;
-}
-
 router.get('/', requireAuth, async (req, res, next) => {
   try {
     const params = [];
-    let where = '1=1';
-    if (req.user.role !== 'admin' && req.user.role !== 'staff') { where += ' AND b.user_id = ?'; params.push(req.user.id); } else if (req.query.mine === 'true') { where += ' AND b.user_id = ?'; params.push(req.user.id); }
-    if (req.query.status) { where += ' AND b.status = ?'; params.push(req.query.status); }
-    if (req.query.from) { where += ' AND b.end_at >= ?'; params.push(req.query.from); }
-    if (req.query.to) { where += ' AND b.start_at <= ?'; params.push(req.query.to); }
-    if (req.query.branchId) { where += ' AND r.branch_id = ?'; params.push(req.query.branchId); }
-    if (req.query.roomId) { where += ' AND r.id = ?'; params.push(req.query.roomId); }
-    if (req.query.requester) { where += ' AND u.name LIKE ?'; params.push('%' + req.query.requester + '%'); }
-    const [rows] = await pool.execute('SELECT b.*, r.name AS room_name, r.building, r.floor, br.name AS branch_name, u.name AS requester_name, approver.name AS approver_name FROM bookings b JOIN rooms r ON r.id=b.room_id LEFT JOIN branches br ON br.id=r.branch_id JOIN users u ON u.id=b.user_id LEFT JOIN users approver ON approver.id=b.approved_by WHERE ' + where + ' ORDER BY b.start_at DESC LIMIT 300', params);
-    res.json(rows.map((row) => ({ ...row, can_check_in: row.status === 'approved' && canCheckIn(row.start_at, row.end_at) })));
-  } catch (error) { next(error); }
+    const whereParts = ['1=1'];
+    const canSeeAll = canSeeAllBookings(req.user);
+
+    if (!canSeeAll || req.query.mine === 'true') {
+      whereParts.push('b.user_id = ?');
+      params.push(Number(req.user.id));
+    }
+
+    if (req.query.status) {
+      whereParts.push('b.status = ?');
+      params.push(String(req.query.status));
+    }
+    if (req.query.from) {
+      whereParts.push('b.end_at >= ?');
+      params.push(String(req.query.from));
+    }
+    if (req.query.to) {
+      whereParts.push('b.start_at <= ?');
+      params.push(String(req.query.to));
+    }
+    if (req.query.branchId) {
+      whereParts.push('r.branch_id = ?');
+      params.push(Number(req.query.branchId));
+    }
+    if (req.query.roomId) {
+      whereParts.push('r.id = ?');
+      params.push(Number(req.query.roomId));
+    }
+    if (req.query.requester && canSeeAll) {
+      whereParts.push('u.name LIKE ?');
+      params.push('%' + String(req.query.requester) + '%');
+    }
+
+    const [rows] = await pool.execute(
+      'SELECT b.*, r.name AS room_name, r.building, r.floor, br.name AS branch_name, u.name AS requester_name, approver.name AS approver_name ' +
+      'FROM bookings b ' +
+      'JOIN rooms r ON r.id = b.room_id ' +
+      'LEFT JOIN branches br ON br.id = r.branch_id ' +
+      'JOIN users u ON u.id = b.user_id ' +
+      'LEFT JOIN users approver ON approver.id = b.approved_by ' +
+      'WHERE ' + whereParts.join(' AND ') + ' ORDER BY b.created_at DESC, b.start_at DESC LIMIT 300',
+      params
+    );
+
+    res.json(rows.map((row) => ({
+      ...row,
+      can_check_in: row.status === 'approved' && canCheckIn(row.start_at, row.end_at),
+    })));
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.post('/', requireAuth, body('roomId').isInt({ min: 1 }), body('title').notEmpty(), body('attendeeCount').isInt({ min: 1 }), body('startAt').isISO8601(), body('endAt').isISO8601(), async (req, res, next) => {
