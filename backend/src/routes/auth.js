@@ -17,10 +17,8 @@ function signUser(user) {
     phone: user.phone || '',
   };
   const secret = process.env.JWT_SECRET || 'dev-secret';
-  const token = safeUser.role === 'admin'
-    ? jwt.sign(safeUser, secret)
-    : jwt.sign(safeUser, secret, { expiresIn: '2m' });
-  return { token, user: safeUser, expiresInSeconds: safeUser.role === 'admin' ? null : 120 };
+  const token = jwt.sign(safeUser, secret);
+  return { token, user: safeUser, expiresInSeconds: null };
 }
 
 async function ensureLoginAttemptsTable() {

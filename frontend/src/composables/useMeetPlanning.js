@@ -246,20 +246,27 @@ export function useMeetPlanning() {
   }
 
   function ownerDeleteConfirmation(label) {
+    if (!isAdmin.value) {
+      notify('เฉพาะผู้ดูแลระบบเท่านั้นที่ลบแจ้งเตือนได้');
+      return null;
+    }
     if (!window.confirm('ต้องการลบ "' + label + '" ใช่หรือไม่')) return null;
-    if (!window.confirm('ยืนยันอีกครั้ง: เมื่อลบแล้วจะนำกลับมาไม่ได้')) return null;
-    const confirmText = window.prompt('พิมพ์คำว่า: ลบแจ้งเตือน');
-    if (confirmText !== 'ลบแจ้งเตือน') return null;
-    const ownerCode = window.prompt('กรอกรหัสยืนยันจากเจ้าของเว็บ');
-    if (!ownerCode) return null;
-    return { confirmText, ownerCode };
+    const deleteCode = window.prompt('กรอกรหัสยืนยัน 1234');
+    if (deleteCode !== '1234') {
+      notify('รหัสยืนยันไม่ถูกต้อง');
+      return null;
+    }
+    return { deleteCode };
   }
 
   async function deleteNotification(item, confirmation = {}) {
     if (!item?.id) return;
+    if (!isAdmin.value) {
+      notify('เฉพาะผู้ดูแลระบบเท่านั้นที่ลบแจ้งเตือนได้');
+      return;
+    }
     try {
-      const options = { method: 'DELETE' };
-      if (isAdmin.value) options.body = JSON.stringify({ deleteCode: confirmation.deleteCode || '' });
+      const options = { method: 'DELETE', body: JSON.stringify({ deleteCode: confirmation.deleteCode || '1234' }) };
       await api('/notifications/' + item.id, options);
       notifications.value = notifications.value.filter((entry) => entry.id !== item.id);
       notify('ลบแจ้งเตือนแล้ว');
@@ -350,8 +357,9 @@ export function useMeetPlanning() {
   async function createBooking() {
     if (!requireLogin()) return;
     if (!selectedRoom.value) return notify('กรุณาเลือกห้องก่อน');
+    const bookingTitle = String(bookingForm.title || '').trim() || 'รายการนี้';
     try {
-      await api('/bookings', {
+      const result = await api('/bookings', {
         method: 'POST',
         body: JSON.stringify({
           roomId: selectedRoom.value.id,
@@ -365,11 +373,16 @@ export function useMeetPlanning() {
           equipment: Array.isArray(searchForm.equipment) ? searchForm.equipment.map((id) => ({ id, quantity: 1 })) : [],
         }),
       });
-      notify('ส่งคำขอจองเรียบร้อย');
+      const created = result.booking || null;
+      notify(result.message || ('การจอง "' + bookingTitle + '" ได้รับอนุมัติแล้ว'));
       bookingForm.title = '';
       bookingForm.purpose = '';
       bookingForm.note = '';
-      await Promise.all([searchRooms(), loadMyBookings(), loadNotifications(true)]);
+      await Promise.all([searchRooms(), loadMyBookings(), loadNotifications(true), loadDashboard()]);
+      if (created && !myBookings.value.some((booking) => booking.id === created.id)) {
+        myBookings.value = [created, ...myBookings.value];
+      }
+      view.value = 'history';
     } catch (error) {
       notify(error.message);
     }

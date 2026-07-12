@@ -112,11 +112,9 @@ async function goToWork(item) {
 
 async function deleteItem(item) {
   const confirmation = await askConfirm({
-    title: isAdmin.value ? 'ลบแจ้งเตือนจริง' : 'ลบแจ้งเตือนของฉัน',
-    message: isAdmin.value
-      ? 'รายการนี้จะถูกลบออกจากฐานข้อมูลจริง กรุณากรอกรหัส 1234 เพื่อยืนยัน'
-      : 'รายการนี้จะไม่แสดงในหน้าของคุณอีก แต่ผู้ดูแลระบบยังตรวจสอบประวัติได้',
-    requiresCode: isAdmin.value,
+    title: 'ลบแจ้งเตือนจริง',
+    message: 'รายการนี้จะถูกลบออกจากฐานข้อมูลจริง กรุณากรอกรหัส 1234 เพื่อยืนยัน',
+    requiresCode: true,
   });
   if (!confirmation) return;
   await props.state?.deleteNotification?.(item, confirmation);
@@ -141,7 +139,7 @@ async function deleteGroup(group) {
       <div>
         <p class="eyebrow">ศูนย์แจ้งเตือน</p>
         <h2>{{ isAdmin ? 'จัดการแจ้งเตือน' : 'แจ้งเตือนของฉัน' }}</h2>
-        <p>{{ isAdmin ? 'เลือกกลุ่มทางซ้ายเพื่อดูรายละเอียด อ่านแล้ว หรือลบรายการจริง' : 'ดู อ่านแล้ว หรือลบแจ้งเตือนที่ไม่ต้องการเก็บไว้' }}</p>
+        <p>{{ isAdmin ? 'เลือกกลุ่มทางซ้ายเพื่อดูรายละเอียด อ่านแล้ว หรือลบรายการจริง' : 'ดูรายละเอียดและทำเครื่องหมายว่าอ่านแล้วได้' }}</p>
       </div>
       <div class="notify-actions">
         <button class="ghost compact" type="button" @click="refresh">รีเฟรช</button>
@@ -195,7 +193,6 @@ async function deleteGroup(group) {
             </button>
             <div class="row-actions">
               <button type="button" @click="openItem(item)">ดูรายละเอียด</button>
-              <button class="danger" type="button" @click="deleteItem(item)">ลบ</button>
             </div>
           </article>
         </template>
@@ -212,13 +209,13 @@ async function deleteGroup(group) {
           <small>{{ props.state?.formatDateTime?.(selected.created_at) }}</small>
           <div class="detail-actions">
             <button class="primary compact" type="button" @click="goToWork(selected)">ไปหน้ารายการ</button>
-            <button class="danger compact" type="button" @click="deleteItem(selected)">ลบ</button>
+            <button v-if="isAdmin" class="danger compact" type="button" @click="deleteItem(selected)">ลบ</button>
           </div>
         </template>
         <template v-else>
           <p class="eyebrow">คำแนะนำ</p>
           <h3>เลือกแจ้งเตือนด้านซ้าย</h3>
-          <p>กดดูรายละเอียดก่อน จากนั้นค่อยไปหน้ารายการหรือลบรายการที่ไม่ต้องการเก็บไว้</p>
+          <p>กดดูรายละเอียดก่อน ระบบจะทำเครื่องหมายว่าอ่านแล้วให้ทันที</p>
         </template>
       </aside>
     </div>

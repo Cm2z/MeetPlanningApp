@@ -116,7 +116,7 @@ router.post('/', requireAuth, body('roomId').isInt({ min: 1 }), body('title').no
     if (Number(attendeeCount) > room.capacity) return res.status(422).json({ message: 'จำนวนผู้เข้าร่วมเกินความจุห้อง' });
     if (await hasConflict(roomId, startAt, endAt)) return res.status(409).json({ message: 'ช่วงเวลานี้มีการจองแล้ว' });
     await connection.beginTransaction();
-    const [result] = await connection.execute('INSERT INTO bookings (room_id, user_id, title, purpose, attendee_count, start_at, end_at, requester_phone, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [roomId, req.user.id, title, purpose, attendeeCount, startAt, endAt, requesterPhone, note]);
+    const [result] = await connection.execute('INSERT INTO bookings (room_id, user_id, title, purpose, attendee_count, start_at, end_at, requester_phone, note, status, approved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())', [roomId, req.user.id, title, purpose, attendeeCount, startAt, endAt, requesterPhone, note, 'approved']);
     for (const item of equipment) {
       if (item.id && item.quantity) await connection.execute('INSERT INTO booking_equipment (booking_id, equipment_id, quantity) VALUES (?, ?, ?)', [result.insertId, item.id, item.quantity]);
     }
@@ -124,7 +124,15 @@ router.post('/', requireAuth, body('roomId').isInt({ min: 1 }), body('title').no
     await audit(req.user.id, 'create_booking', 'booking', result.insertId, { title, roomId, startAt, endAt });
     await notify({ roleTarget: 'admin', title: 'มีคำขอจองใหม่', message: req.user.name + ': ' + title, link: '/bookings' });
     await notify({ roleTarget: 'staff', title: 'มีคำขอจองใหม่', message: req.user.name + ': ' + title, link: '/bookings' });
-    res.status(201).json({ id: result.insertId, message: 'ส่งคำขอจองห้องเรียบร้อย' });
+    const [[createdBooking]] = await pool.execute(
+      'SELECT b.*, r.name AS room_name, r.building, r.floor, br.name AS branch_name, u.name AS requester_name FROM bookings b JOIN rooms r ON r.id = b.room_id LEFT JOIN branches br ON br.id = r.branch_id JOIN users u ON u.id = b.user_id WHERE b.id = ? LIMIT 1',
+      [result.insertId]
+    );
+    res.status(201).json({
+      id: result.insertId,
+      booking: createdBooking || null,
+      message: 'การจอง "' + title + '" ได้รับอนุมัติแล้ว'
+    });
   } catch (error) { await connection.rollback(); next(error); } finally { connection.release(); }
 });
 

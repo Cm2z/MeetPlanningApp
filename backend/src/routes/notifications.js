@@ -115,11 +115,7 @@ router.delete('/:id', requireAuth, async (req, res, next) => {
       const [result] = await pool.execute('DELETE FROM notifications WHERE id = ?', [id]);
       return res.json({ ok: true, deleted: result.affectedRows });
     }
-    const [result] = await pool.execute(
-      'UPDATE notifications SET user_deleted_at = NOW() WHERE id = ? AND user_id = ?',
-      [id, userId(req)]
-    );
-    res.json({ ok: true, deleted: result.affectedRows });
+    return res.status(403).json({ message: 'เฉพาะผู้ดูแลระบบเท่านั้นที่ลบแจ้งเตือนได้' });
   } catch (error) {
     next(error);
   }
