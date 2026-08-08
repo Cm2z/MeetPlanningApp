@@ -45,7 +45,7 @@ router.get('/', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/', requireAuth, requireRole('admin', 'staff'),
+router.post('/', requireAuth, requireRole('admin'),
   body('name').notEmpty(), body('building').notEmpty(), body('floor').notEmpty(), body('capacity').isInt({ min: 1 }),
   async (req, res, next) => {
     try {
@@ -61,7 +61,7 @@ router.post('/', requireAuth, requireRole('admin', 'staff'),
   }
 );
 
-router.patch('/:id', requireAuth, requireRole('admin', 'staff'), async (req, res, next) => {
+router.patch('/:id', requireAuth, requireRole('admin'), async (req, res, next) => {
   try {
     const { name, code = '', branchId = 1, building, floor, capacity, status = 'available', description = '', imageUrl = '', equipment = [], images = [] } = req.body;
     await pool.execute('UPDATE rooms SET branch_id = ?, code = ?, name = ?, building = ?, floor = ?, capacity = ?, status = ?, description = ?, image_url = ? WHERE id = ?', [branchId, code, name, building, floor, capacity, status, description, imageUrl, req.params.id]);
@@ -74,7 +74,7 @@ router.patch('/:id', requireAuth, requireRole('admin', 'staff'), async (req, res
   } catch (error) { next(error); }
 });
 
-router.delete('/:id', requireAuth, requireRole('admin', 'staff'), async (req, res, next) => {
+router.delete('/:id', requireAuth, requireRole('admin'), async (req, res, next) => {
   try {
     await pool.execute('UPDATE rooms SET status = "disabled" WHERE id = ?', [req.params.id]);
     await audit(req.user.id, 'disable_room', 'room', req.params.id, {});

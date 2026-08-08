@@ -11,6 +11,7 @@ import DashboardView from './views/DashboardView.vue';
 import KioskView from './views/KioskView.vue';
 import NotificationsView from './views/NotificationsView.vue';
 import ProfileView from './views/ProfileView.vue';
+import RoomManagementView from './views/RoomManagementView.vue';
 import RecurringView from './views/RecurringView.vue';
 import ReserveView from './views/ReserveView.vue';
 import SettingsView from './views/SettingsView.vue';
@@ -22,6 +23,7 @@ import { useMeetPlanning } from './composables/useMeetPlanning.js';
 const state = useMeetPlanning();
 
 const titleMap = {
+  rooms: 'จัดการห้องประชุม',
   dashboard: 'หน้าหลัก',
   reserve: 'ค้นหาและจองห้อง',
   recurring: 'จองซ้ำ',
@@ -45,7 +47,7 @@ function go(target) {
     state.authMode.value = 'login';
     return;
   }
-  if (target === 'bookings' && !state.isAdmin.value) { state.view.value = 'dashboard'; return state.notify('หน้านี้สำหรับผู้ดูแลระบบเท่านั้น'); }
+  if ((target === 'bookings' || target === 'rooms') && !state.isAdmin.value) { state.view.value = 'dashboard'; return state.notify('หน้านี้สำหรับผู้ดูแลระบบเท่านั้น'); }
   state.view.value = target;
   if (target === 'reserve') state.searchRooms?.();
   if (target === 'bookings') state.loadBookings?.();
@@ -99,6 +101,7 @@ onMounted(async () => {
       <!-- FINAL_BOOKINGS_VIEW_GUARD -->
       <BookingsView v-else-if="state.view.value === 'bookings' && state.isAdmin.value" :state="state" />
       <DashboardView v-else-if="state.view.value === 'bookings' && !state.isAdmin.value" :state="state" />
+      <RoomManagementView v-else-if="state.view.value === 'rooms' && state.isAdmin.value" :state="state" />
       <StatsView v-else-if="state.view.value === 'stats'" :state="state" />
       <BackupView v-else-if="state.view.value === 'backup'" :state="state" />
       <SettingsView v-else-if="state.view.value === 'settings'" :state="state" />

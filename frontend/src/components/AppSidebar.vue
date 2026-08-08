@@ -3,6 +3,7 @@
 import { computed, ref } from 'vue';
 import {
   BarChart3,
+  Building2,
   Bell,
   CalendarCheck,
   Database,
@@ -42,6 +43,7 @@ const menuItems = computed(() => {
     { key: 'waitlist', label: 'รายการรอคิว', icon: Users, show: true },
     { key: 'history', label: 'ประวัติการจอง', icon: History, show: !props.isAdmin },
     { key: 'notifications', label: 'แจ้งเตือน', icon: Bell, show: true, badge: props.unreadCount || 0 },
+    { key: 'rooms', label: 'จัดการห้องประชุม', icon: Building2, show: props.isAdmin },
     { key: 'bookings', label: 'รายการจอง/อนุมัติ', icon: CalendarCheck, show: props.isAdmin },
     { key: 'stats', label: 'สถิติ', icon: BarChart3, show: props.isAdmin },
     { key: 'backup', label: 'สำรองข้อมูล', icon: Database, show: props.isAdmin },
