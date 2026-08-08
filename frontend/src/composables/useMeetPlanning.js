@@ -259,6 +259,7 @@ export function useMeetPlanning() {
     return { deleteCode };
   }
 
+
   async function deleteNotification(item, confirmation = {}) {
     if (!item?.id) return;
     if (!isAdmin.value) {
@@ -353,6 +354,7 @@ export function useMeetPlanning() {
     bookings.value = [];
     myBookings.value = [];
   }
+
 
   async function createBooking() {
     if (!requireLogin()) return;

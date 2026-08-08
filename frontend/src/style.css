@@ -2296,3 +2296,381 @@ button:disabled {
   .booking-row, .table-row, .upcoming-item { border-radius: 16px !important; }
 }
 
+
+
+/* MEETPLANNING_BLUE_MOBILE_REFERENCE_LIMITED_20260808 */
+:root {
+  --ink: #0f2742;
+  --muted: #64748b;
+  --line: #cfe0f5;
+  --panel: #ffffff;
+  --wash: #eef6ff;
+  --primary: #1769c2;
+  --primary-dark: #0b4e91;
+  --accent: #2f80ed;
+  --danger: #b91c1c;
+  --ok: #0f766e;
+}
+
+body,
+.app-shell,
+.auth-shell {
+  background: #eef6ff !important;
+  color: #0f2742 !important;
+}
+
+.primary,
+button.primary,
+.auth-tabs button.active,
+.sidebar nav button.active,
+.sidebar-menu button.active {
+  background: #1769c2 !important;
+  color: #ffffff !important;
+}
+
+.primary:hover,
+button.primary:hover {
+  background: #0b4e91 !important;
+}
+
+.sidebar,
+.panel,
+.login-panel,
+.metric,
+.metric-card,
+.room-card,
+.intro-grid div {
+  border-color: #cfe0f5 !important;
+}
+
+.sidebar button,
+.sidebar-brand,
+.logout-button,
+.text-button,
+.ghost {
+  color: #0b4e91 !important;
+}
+
+.sidebar button.active,
+.sidebar button:hover,
+.sidebar nav button.active,
+.sidebar nav button:hover {
+  background: #dcecff !important;
+}
+
+.eyebrow,
+.brand-lockup p,
+.topbar p,
+.section-title p {
+  color: #1769c2 !important;
+}
+
+@media (max-width: 760px) {
+  body {
+    background: #ffffff !important;
+  }
+
+  .auth-shell,
+  .fit-login,
+  .login-page {
+    background: #ffffff !important;
+  }
+
+  .login-page {
+    min-height: 100svh !important;
+    padding: 18px 14px 90px !important;
+    display: block !important;
+  }
+
+  .brand-lockup {
+    display: flex !important;
+    gap: 10px !important;
+    align-items: center !important;
+    margin-bottom: 16px !important;
+  }
+
+  .brand-mark {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 12px !important;
+    background: #1769c2 !important;
+  }
+
+  .brand-lockup h1 {
+    font-size: 26px !important;
+    line-height: 1.1 !important;
+  }
+
+  .fit-copy,
+  .intro-copy {
+    margin: 0 -2px 0 !important;
+    min-height: 260px !important;
+    padding: 28px 22px !important;
+    border-radius: 0 0 26px 26px !important;
+    color: #ffffff !important;
+    background:
+      linear-gradient(90deg, rgba(8, 25, 48, .86), rgba(8, 25, 48, .35)),
+      url('https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1100&q=80') center/cover !important;
+    box-shadow: none !important;
+  }
+
+  .fit-copy h2,
+  .intro-copy h2 {
+    max-width: 330px !important;
+    margin: 12px 0 10px !important;
+    color: #ffffff !important;
+    font-size: 34px !important;
+    line-height: 1.22 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .fit-copy p,
+  .intro-copy p {
+    max-width: 330px !important;
+    color: rgba(255,255,255,.94) !important;
+    font-size: 15px !important;
+  }
+
+  .official-badge {
+    background: rgba(255,255,255,.94) !important;
+    color: #0b4e91 !important;
+  }
+
+  .fit-visual {
+    position: relative !important;
+    z-index: 2 !important;
+    margin: -38px 8px 18px !important;
+    padding: 14px !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    border: 1px solid #d8e6f7 !important;
+    border-radius: 22px !important;
+    background: #ffffff !important;
+    box-shadow: 0 20px 42px rgba(15,39,66,.16) !important;
+  }
+
+  .fit-card,
+  .fit-room {
+    border-color: #e2ecfa !important;
+    background: #f8fbff !important;
+    border-radius: 16px !important;
+  }
+
+  .fit-points {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin: 2px 0 18px !important;
+  }
+
+  .fit-points div {
+    min-height: 74px !important;
+    padding: 10px 8px !important;
+    text-align: center !important;
+    border-radius: 16px !important;
+    background: #ffffff !important;
+    border-color: #d8e6f7 !important;
+    box-shadow: 0 8px 22px rgba(15,39,66,.06) !important;
+  }
+
+  .fit-points strong {
+    color: #0f2742 !important;
+    font-size: 14px !important;
+  }
+
+  .fit-points span {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  .login-panel,
+  .fit-panel {
+    margin: 0 !important;
+    padding: 18px !important;
+    border-radius: 20px !important;
+    border-color: #d8e6f7 !important;
+    box-shadow: 0 18px 42px rgba(15,39,66,.12) !important;
+  }
+
+  .auth-tabs {
+    background: #eaf3ff !important;
+    border-radius: 14px !important;
+  }
+
+  input,
+  textarea,
+  select {
+    border-color: #c7dbf4 !important;
+    border-radius: 14px !important;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: #1769c2 !important;
+    outline-color: rgba(23,105,194,.18) !important;
+  }
+
+  .app-shell {
+    display: block !important;
+    min-height: 100svh !important;
+    padding-top: 72px !important;
+    background: #eef6ff !important;
+  }
+
+  .mobile-nav-bar {
+    height: 72px !important;
+    padding: 10px 16px !important;
+    background: rgba(255,255,255,.98) !important;
+    border-bottom: 1px solid #d8e6f7 !important;
+    box-shadow: 0 8px 26px rgba(15,39,66,.08) !important;
+  }
+
+  .mobile-logo {
+    color: #0f2742 !important;
+    font-size: 20px !important;
+    font-weight: 900 !important;
+  }
+
+  .mobile-logo svg {
+    width: 34px !important;
+    height: 34px !important;
+    padding: 7px !important;
+    border-radius: 12px !important;
+    color: #ffffff !important;
+    background: #1769c2 !important;
+  }
+
+  .hamburger-button {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 999px !important;
+    border-color: #d8e6f7 !important;
+    color: #0f2742 !important;
+    background: #ffffff !important;
+  }
+
+  .main-content,
+  .workspace {
+    padding: 18px 14px 34px !important;
+  }
+
+  .topbar {
+    display: grid !important;
+    gap: 10px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .topbar h1 {
+    font-size: 30px !important;
+    line-height: 1.14 !important;
+  }
+
+  .user-pill {
+    justify-self: start !important;
+    width: auto !important;
+    min-height: 40px !important;
+    border-color: #cfe0f5 !important;
+    color: #0f2742 !important;
+    font-size: 14px !important;
+    background: #ffffff !important;
+  }
+
+  .dashboard-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .metric-card,
+  .metric,
+  .panel {
+    border-radius: 18px !important;
+    border-color: #d8e6f7 !important;
+    box-shadow: 0 10px 26px rgba(15,39,66,.06) !important;
+  }
+
+  .metric-card strong,
+  .metric strong {
+    color: #0f2742 !important;
+  }
+
+  .quick-actions {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .quick-actions button,
+  .search-panel .primary,
+  .booking-form .primary {
+    min-height: 52px !important;
+    border-radius: 16px !important;
+    font-size: 16px !important;
+  }
+
+  .reserve-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .search-panel,
+  .booking-form {
+    border-radius: 22px !important;
+    padding: 18px !important;
+  }
+
+  .rooms-list {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: minmax(250px, 84vw) !important;
+    gap: 14px !important;
+    overflow-x: auto !important;
+    padding: 2px 2px 12px !important;
+    scroll-snap-type: x mandatory !important;
+  }
+
+  .room-card {
+    scroll-snap-align: start !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 22px !important;
+    border: 1px solid #d8e6f7 !important;
+    background: #ffffff !important;
+    box-shadow: 0 16px 34px rgba(15,39,66,.10) !important;
+  }
+
+  .room-card.selected {
+    border-color: #1769c2 !important;
+    box-shadow: 0 18px 38px rgba(23,105,194,.18) !important;
+  }
+
+  .room-card img {
+    width: 100% !important;
+    height: 176px !important;
+    border-radius: 0 !important;
+    object-fit: cover !important;
+  }
+
+  .room-card > div {
+    padding: 14px !important;
+  }
+
+  .room-card h3 {
+    font-size: 22px !important;
+    line-height: 1.25 !important;
+  }
+
+  .tags small {
+    background: #eaf3ff !important;
+    color: #0b4e91 !important;
+  }
+
+  .sidebar.open .sidebar-menu button.active {
+    background: #1769c2 !important;
+    color: #ffffff !important;
+  }
+}
+/* MEETPLANNING_BLUE_MOBILE_REFERENCE_LIMITED_END */
