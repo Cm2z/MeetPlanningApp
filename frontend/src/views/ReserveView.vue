@@ -45,9 +45,35 @@ function setAvailability(status, message) {
   availabilityMessage.value = message;
 }
 
+function selectedDateTime(time) {
+  const { date } = props.state.searchForm;
+  if (!date || !time) return null;
+  const value = new Date(`${date}T${time}:00`);
+  return Number.isNaN(value.getTime()) ? null : value;
+}
+
+function hasPastSelection() {
+  const start = selectedDateTime(props.state.searchForm.start);
+  return start ? start.getTime() <= Date.now() : false;
+}
+
+function hasInvalidTimeRange() {
+  const start = selectedDateTime(props.state.searchForm.start);
+  const end = selectedDateTime(props.state.searchForm.end);
+  return Boolean(start && end && end.getTime() <= start.getTime());
+}
+
 async function checkRoomAvailability() {
   const room = props.state.selectedRoom.value;
   if (!room) return false;
+  if (hasInvalidTimeRange()) {
+    setAvailability('busy', 'เวลาเริ่มต้นต้องมาก่อนเวลาสิ้นสุด');
+    return false;
+  }
+  if (hasPastSelection()) {
+    setAvailability('past', 'ไม่สามารถจองย้อนหลังได้ กรุณาเลือกวันและเวลาในอนาคต');
+    return false;
+  }
   const attendeeCount = Number(props.state.bookingForm.attendeeCount || props.state.searchForm.capacity || 1);
   if (attendeeCount > Number(room.capacity || 0)) {
     setAvailability('busy', 'ไม่ว่าง: จำนวนผู้เข้าร่วมเกินความจุห้อง');
@@ -248,7 +274,7 @@ watch(
                 <textarea v-model="state.bookingForm.purpose" rows="4" placeholder="ใส่รายละเอียดสั้นๆ"></textarea>
               </label>
               <button class="primary modal-submit-button" type="submit" :disabled="availabilityStatus !== 'free'">
-                {{ availabilityStatus === 'free' ? 'ยืนยันการจองห้องนี้' : 'เลือกเวลาว่างก่อนจอง' }}
+                {{ availabilityStatus === 'free' ? 'ยืนยันการจองห้องนี้' : availabilityStatus === 'past' ? 'ไม่สามารถจองย้อนหลังได้' : 'เลือกเวลาว่างก่อนจอง' }}
               </button>
             </form>
           </div>

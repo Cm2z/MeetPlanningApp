@@ -24,13 +24,18 @@ router.get('/meta', async (_req, res, next) => {
 
 router.get('/', async (req, res, next) => {
   try {
-    const { date, start, end, capacity = 1, branchId = '', building = '', equipment = '', status = 'available', q = '' } = req.query;
+    const { date, start, end, capacity = 1, branchId = '', building = '', equipment = '', status = 'available' } = req.query;
+    const keyword = String(req.query.keyword || req.query.q || '').trim();
     const params = [Number(capacity) || 1];
     let where = 'r.capacity >= ?';
     if (status) { where += ' AND r.status = ?'; params.push(status); }
     if (branchId) { where += ' AND r.branch_id = ?'; params.push(branchId); }
     if (building) { where += ' AND r.building = ?'; params.push(building); }
-    if (q) { where += ' AND (r.name LIKE ? OR r.code LIKE ? OR r.description LIKE ?)'; params.push('%' + q + '%', '%' + q + '%', '%' + q + '%'); }
+    if (keyword) {
+      where += ' AND (r.name LIKE ? OR r.code LIKE ? OR r.description LIKE ? OR r.building LIKE ? OR br.name LIKE ?)';
+      const searchTerm = `%${keyword}%`;
+      params.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
+    }
     if (date && start && end) {
       where += " AND NOT EXISTS (SELECT 1 FROM bookings b WHERE b.room_id = r.id AND b.status IN ('pending','approved','checked_in') AND TIMESTAMP(?, ?) < b.end_at AND TIMESTAMP(?, ?) > b.start_at)";
       params.push(date, start, date, end);

@@ -4416,3 +4416,135 @@ button.primary:hover {
   }
 }
 /* MEETPLANNING_MOBILE_REMOVE_HEADER_GAP_20260808_END */
+
+/* MEETPLANNING_BOOKING_POPUP_VIEWPORT_FIT_20260814 */
+.room-modal-backdrop {
+  padding: 16px !important;
+}
+
+.room-booking-modal {
+  width: min(1080px, calc(100vw - 32px)) !important;
+  height: min(840px, calc(100dvh - 32px)) !important;
+  max-height: calc(100dvh - 32px) !important;
+  grid-template-columns: minmax(0, 1.02fr) minmax(390px, .98fr) !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  overflow: hidden !important;
+}
+
+.room-booking-modal,
+.room-modal-gallery,
+.room-modal-info,
+.modal-booking-form {
+  min-width: 0 !important;
+}
+
+.room-modal-gallery {
+  min-height: 0 !important;
+  grid-template-rows: minmax(0, 1fr) auto !important;
+}
+
+.room-modal-main-image {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
+.room-modal-info {
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding: 24px 22px calc(20px + env(safe-area-inset-bottom)) !important;
+}
+
+.modal-booking-form {
+  padding-bottom: 8px !important;
+}
+
+.modal-booking-form textarea {
+  min-height: 108px !important;
+  max-height: 28dvh !important;
+  resize: vertical !important;
+}
+
+.modal-submit-button {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 2 !important;
+  margin-top: 4px !important;
+  box-shadow: 0 -10px 18px rgba(255, 255, 255, .94) !important;
+}
+
+.availability-pill.past {
+  border-color: #f4a3a3 !important;
+  background: #fff0f0 !important;
+  color: #b42318 !important;
+}
+
+@media (max-width: 1100px) and (min-width: 821px) {
+  .room-booking-modal {
+    width: min(1000px, calc(100vw - 28px)) !important;
+    height: calc(100dvh - 28px) !important;
+    max-height: calc(100dvh - 28px) !important;
+    grid-template-columns: minmax(340px, .92fr) minmax(360px, 1fr) !important;
+  }
+
+  .room-modal-info {
+    padding: 20px 20px calc(18px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .room-modal-backdrop {
+    padding: 10px !important;
+    place-items: center !important;
+  }
+
+  .room-booking-modal {
+    width: min(100%, 620px) !important;
+    height: min(860px, calc(100dvh - 20px)) !important;
+    max-height: calc(100dvh - 20px) !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: minmax(175px, 31dvh) minmax(0, 1fr) !important;
+  }
+
+  .room-modal-gallery {
+    min-height: 0 !important;
+    grid-template-rows: minmax(0, 1fr) auto !important;
+  }
+
+  .room-modal-info {
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    padding: 16px 16px calc(18px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .modal-booking-form textarea {
+    min-height: 96px !important;
+    max-height: 22dvh !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .room-modal-backdrop {
+    padding: 0 !important;
+  }
+
+  .room-booking-modal {
+    width: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    grid-template-rows: minmax(160px, 28dvh) minmax(0, 1fr) !important;
+  }
+
+  .room-modal-info {
+    padding: 14px 14px calc(16px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .room-modal-facts-editable {
+    gap: 8px !important;
+  }
+}
+/* MEETPLANNING_BOOKING_POPUP_VIEWPORT_FIT_20260814_END */
