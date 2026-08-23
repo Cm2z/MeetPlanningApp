@@ -117,8 +117,8 @@ function scheduleAvailabilityCheck(delay = 350) {
 async function submitBooking() {
   const canBook = await checkRoomAvailability();
   if (!canBook) return;
-  await props.state.createBooking();
-  showRoomModal.value = false;
+  const created = await props.state.createBooking();
+  if (created) showRoomModal.value = false;
 }
 
 watch(() => props.state.selectedRoom.value?.id, () => {

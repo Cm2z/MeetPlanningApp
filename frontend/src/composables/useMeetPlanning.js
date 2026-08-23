@@ -357,8 +357,11 @@ export function useMeetPlanning() {
 
 
   async function createBooking() {
-    if (!requireLogin()) return;
-    if (!selectedRoom.value) return notify('กรุณาเลือกห้องก่อน');
+    if (!requireLogin()) return false;
+    if (!selectedRoom.value) {
+      notify('กรุณาเลือกห้องก่อน');
+      return false;
+    }
     const bookingTitle = String(bookingForm.title || '').trim() || 'รายการนี้';
     try {
       const result = await api('/bookings', {
@@ -376,7 +379,7 @@ export function useMeetPlanning() {
         }),
       });
       const created = result.booking || null;
-      notify(result.message || ('การจอง "' + bookingTitle + '" ได้รับอนุมัติแล้ว'));
+      notify(result.message || ('ส่งคำขอจอง "' + bookingTitle + '" แล้ว กรุณารอผู้ดูแลระบบอนุมัติ'));
       bookingForm.title = '';
       bookingForm.purpose = '';
       bookingForm.note = '';
@@ -385,8 +388,10 @@ export function useMeetPlanning() {
         myBookings.value = [created, ...myBookings.value];
       }
       view.value = 'history';
+      return true;
     } catch (error) {
       notify(error.message);
+      return false;
     }
   }
 

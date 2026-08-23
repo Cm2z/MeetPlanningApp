@@ -116,7 +116,7 @@ router.post('/', requireAuth, body('roomId').isInt({ min: 1 }), body('title').no
     if (Number(attendeeCount) > room.capacity) return res.status(422).json({ message: 'จำนวนผู้เข้าร่วมเกินความจุห้อง' });
     if (await hasConflict(roomId, startAt, endAt)) return res.status(409).json({ message: 'ช่วงเวลานี้มีการจองแล้ว' });
     await connection.beginTransaction();
-    const [result] = await connection.execute('INSERT INTO bookings (room_id, user_id, title, purpose, attendee_count, start_at, end_at, requester_phone, note, status, approved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())', [roomId, req.user.id, title, purpose, attendeeCount, startAt, endAt, requesterPhone, note, 'approved']);
+    const [result] = await connection.execute('INSERT INTO bookings (room_id, user_id, title, purpose, attendee_count, start_at, end_at, requester_phone, note, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [roomId, req.user.id, title, purpose, attendeeCount, startAt, endAt, requesterPhone, note, 'pending']);
     for (const item of equipment) {
       if (item.id && item.quantity) await connection.execute('INSERT INTO booking_equipment (booking_id, equipment_id, quantity) VALUES (?, ?, ?)', [result.insertId, item.id, item.quantity]);
     }
@@ -131,7 +131,7 @@ router.post('/', requireAuth, body('roomId').isInt({ min: 1 }), body('title').no
     res.status(201).json({
       id: result.insertId,
       booking: createdBooking || null,
-      message: 'การจอง "' + title + '" ได้รับอนุมัติแล้ว'
+      message: 'ส่งคำขอจอง "' + title + '" แล้ว กรุณารอผู้ดูแลระบบอนุมัติ'
     });
   } catch (error) { await connection.rollback(); next(error); } finally { connection.release(); }
 });
