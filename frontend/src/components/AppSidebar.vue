@@ -28,6 +28,7 @@ const props = defineProps({
 
 const emit = defineEmits(['navigate', 'logout']);
 const menuOpen = ref(false);
+const logoUrl = `${import.meta.env.BASE_URL}meetplanning-logo.png`;
 
 const roleText = computed(() => props.isAdmin ? 'ผู้ดูแลระบบ' : 'ผู้ใช้งาน');
 const userName = computed(() => props.session?.user?.name || props.session?.user?.email || 'ผู้ใช้งาน');
@@ -63,7 +64,7 @@ function logout() {
   <aside class="sidebar" :class="{ open: menuOpen }">
     <div class="mobile-nav-bar">
       <button class="mobile-logo" type="button" @click="go('dashboard')" aria-label="ไปหน้าหลัก">
-        <img src="/meetplanning-logo.png" alt="MeetPlanning" />
+        <img :src="logoUrl" alt="MeetPlanning" />
       </button>
       <button class="hamburger-button" type="button" :aria-expanded="menuOpen" aria-label="เปิดเมนู" @click="menuOpen = !menuOpen">
         <X v-if="menuOpen" />
@@ -72,7 +73,7 @@ function logout() {
     </div>
 
     <button class="sidebar-brand" type="button" @click="go('dashboard')">
-      <img src="/meetplanning-logo.png" alt="MeetPlanning" />
+      <img :src="logoUrl" alt="MeetPlanning" />
     </button>
 
     <div v-if="session" class="sidebar-user">
