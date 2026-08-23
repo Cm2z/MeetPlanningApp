@@ -7,17 +7,14 @@ import {
   Bell,
   CalendarCheck,
   Database,
-  DoorOpen,
   History,
   Home,
   LogOut,
   Menu,
-  Repeat2,
   Search,
   Settings,
   ShieldCheck,
   UserRound,
-  Users,
   X,
 } from '@lucide/vue';
 
@@ -39,8 +36,6 @@ const menuItems = computed(() => {
   const items = [
     { key: 'dashboard', label: 'หน้าหลัก', icon: Home, show: true },
     { key: 'reserve', label: 'ค้นหาและจองห้อง', icon: Search, show: true },
-    { key: 'recurring', label: 'จองซ้ำ', icon: Repeat2, show: true },
-    { key: 'waitlist', label: 'รายการรอคิว', icon: Users, show: true },
     { key: 'history', label: 'ประวัติการจอง', icon: History, show: !props.isAdmin },
     { key: 'notifications', label: 'แจ้งเตือน', icon: Bell, show: true, badge: props.unreadCount || 0 },
     { key: 'rooms', label: 'จัดการห้องประชุม', icon: Building2, show: props.isAdmin },
@@ -48,7 +43,6 @@ const menuItems = computed(() => {
     { key: 'stats', label: 'สถิติ', icon: BarChart3, show: props.isAdmin },
     { key: 'backup', label: 'สำรองข้อมูล', icon: Database, show: props.isAdmin },
     { key: 'settings', label: 'ตั้งค่าระบบ', icon: Settings, show: props.isAdmin },
-    { key: 'kiosk', label: 'หน้าจอหน้าห้อง', icon: DoorOpen, show: true },
     { key: 'profile', label: 'โปรไฟล์', icon: UserRound, show: Boolean(props.session) },
   ];
   return items.filter((item) => item.show);
@@ -69,8 +63,7 @@ function logout() {
   <aside class="sidebar" :class="{ open: menuOpen }">
     <div class="mobile-nav-bar">
       <button class="mobile-logo" type="button" @click="go('dashboard')" aria-label="ไปหน้าหลัก">
-        <DoorOpen />
-        <span>MeetPlanning</span>
+        <img src="/meetplanning-logo.png" alt="MeetPlanning" />
       </button>
       <button class="hamburger-button" type="button" :aria-expanded="menuOpen" aria-label="เปิดเมนู" @click="menuOpen = !menuOpen">
         <X v-if="menuOpen" />
@@ -79,8 +72,7 @@ function logout() {
     </div>
 
     <button class="sidebar-brand" type="button" @click="go('dashboard')">
-      <DoorOpen />
-      <span>MeetPlanning</span>
+      <img src="/meetplanning-logo.png" alt="MeetPlanning" />
     </button>
 
     <div v-if="session" class="sidebar-user">

@@ -108,6 +108,11 @@ async function openItem(item) {
 
 async function goToWork(item) {
   await props.state?.openNotification?.(item);
+  selected.value = null;
+}
+
+function closeDetails() {
+  selected.value = null;
 }
 
 async function deleteItem(item) {
@@ -139,7 +144,7 @@ async function deleteGroup(group) {
       <div>
         <p class="eyebrow">ศูนย์แจ้งเตือน</p>
         <h2>{{ isAdmin ? 'จัดการแจ้งเตือน' : 'แจ้งเตือนของฉัน' }}</h2>
-        <p>{{ isAdmin ? 'เลือกกลุ่มทางซ้ายเพื่อดูรายละเอียด อ่านแล้ว หรือลบรายการจริง' : 'ดูรายละเอียดและทำเครื่องหมายว่าอ่านแล้วได้' }}</p>
+        <p>{{ isAdmin ? 'กดดูรายละเอียดเพื่ออ่าน จัดการรายการ และไปหน้ารายการจองได้' : 'กดดูรายละเอียดเพื่ออ่านและทำเครื่องหมายว่าอ่านแล้วได้' }}</p>
       </div>
       <div class="notify-actions">
         <button class="ghost compact" type="button" @click="refresh">รีเฟรช</button>
@@ -157,7 +162,7 @@ async function deleteGroup(group) {
       <section class="notify-list">
         <template v-if="isAdmin">
           <article v-for="group in adminGroups" :key="group.name" class="notify-card group-card" :class="{ selected: selected && userName(selected) === group.name }">
-            <button class="group-main" type="button" @click="openedGroups[group.name] = !openedGroups[group.name]; selected = group.latest">
+            <button class="group-main" type="button" @click="openedGroups[group.name] = !openedGroups[group.name]">
               <span class="avatar">{{ initials(group.name) }}</span>
               <span>
                 <strong>{{ group.name }}</strong>
@@ -201,23 +206,21 @@ async function deleteGroup(group) {
         <button v-if="hasMore" class="ghost load-more" type="button" @click="loadMore">โหลดเพิ่ม</button>
       </section>
 
-      <aside class="panel notify-detail">
-        <template v-if="selected">
-          <p class="eyebrow">รายละเอียด</p>
-          <h3>{{ selected.title }}</h3>
-          <p>{{ cleanMessage(selected.message) }}</p>
-          <small>{{ props.state?.formatDateTime?.(selected.created_at) }}</small>
-          <div class="detail-actions">
-            <button class="primary compact" type="button" @click="goToWork(selected)">ไปหน้ารายการ</button>
-            <button v-if="isAdmin" class="danger compact" type="button" @click="deleteItem(selected)">ลบ</button>
-          </div>
-        </template>
-        <template v-else>
-          <p class="eyebrow">คำแนะนำ</p>
-          <h3>เลือกแจ้งเตือนด้านซ้าย</h3>
-          <p>กดดูรายละเอียดก่อน ระบบจะทำเครื่องหมายว่าอ่านแล้วให้ทันที</p>
-        </template>
-      </aside>
+    </div>
+
+    <div v-if="selected" class="notification-modal-backdrop" @click.self="closeDetails">
+      <section class="notification-detail-modal" role="dialog" aria-modal="true" aria-labelledby="notification-detail-title">
+        <button class="notification-modal-close" type="button" aria-label="ปิดรายละเอียดแจ้งเตือน" @click="closeDetails">ปิด</button>
+        <p class="eyebrow">รายละเอียดแจ้งเตือน</p>
+        <h3 id="notification-detail-title">{{ selected.title }}</h3>
+        <p class="notification-detail-message">{{ cleanMessage(selected.message) }}</p>
+        <small>{{ props.state?.formatDateTime?.(selected.created_at) }}</small>
+        <div class="notification-modal-actions">
+          <button v-if="isAdmin" class="primary compact" type="button" @click="goToWork(selected)">ไปหน้ารายการจอง</button>
+          <button v-if="isAdmin" class="danger compact" type="button" @click="deleteItem(selected)">ลบ</button>
+          <button class="ghost compact" type="button" @click="closeDetails">ปิดหน้าต่าง</button>
+        </div>
+      </section>
     </div>
 
     <div v-if="confirmBox.show" class="modal-backdrop">
@@ -235,3 +238,80 @@ async function deleteGroup(group) {
     </div>
   </div>
 </template>
+
+<style scoped>
+.notification-modal-backdrop {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(10, 28, 55, 0.58);
+}
+
+.notification-detail-modal {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: min(560px, calc(100vh - 40px));
+  overflow: auto;
+  padding: 30px;
+  border: 1px solid #c9dcf6;
+  border-radius: 18px;
+  background: #ffffff;
+  color: #10294a;
+  box-shadow: 0 24px 80px rgba(7, 34, 74, 0.35);
+}
+
+.notification-detail-modal h3 {
+  margin: 6px 36px 12px 0;
+  font-size: 1.45rem;
+}
+
+.notification-detail-message {
+  margin: 0 0 12px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.notification-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  padding: 8px;
+  border: 0;
+  background: transparent;
+  color: #174f8d;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.notification-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+@media (max-width: 640px) {
+  .notification-modal-backdrop {
+    align-items: flex-end;
+    padding: 10px;
+  }
+
+  .notification-detail-modal {
+    max-height: 82vh;
+    padding: 24px 18px;
+    border-radius: 18px 18px 12px 12px;
+  }
+
+  .notification-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .notification-modal-actions button {
+    width: 100%;
+  }
+}
+</style>
