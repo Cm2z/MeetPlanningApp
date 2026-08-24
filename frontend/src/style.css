@@ -5642,6 +5642,31 @@ body {
 }
 /* MEETPLANNING_IPAD_SCROLL_UNLOCK_20260825_END */
 
+/* MEETPLANNING_IPAD_MENU_STACKING_FIX_20260825 */
+@media (min-width: 761px) and (max-width: 1180px) {
+  .app-shell > .sidebar {
+    z-index: 130 !important;
+  }
+
+  .mobile-nav-bar {
+    position: relative !important;
+    z-index: 150 !important;
+  }
+
+  .sidebar-user,
+  .sidebar-menu,
+  .sidebar > .logout {
+    z-index: 145 !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .mobile-menu-backdrop {
+    z-index: 110 !important;
+  }
+}
+/* MEETPLANNING_IPAD_MENU_STACKING_FIX_20260825_END */
+
 @media (max-width: 760px) {
   .mobile-logo {
     width: 150px !important;
