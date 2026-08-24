@@ -21,7 +21,7 @@ defineProps({ state: Object });
         <label>อีเมล<input v-model="state.profile.email" disabled /></label>
         <label>แผนก<input v-model="state.profile.department" /></label>
         <label>เบอร์โทร<input v-model="state.profile.phone" /></label>
-        <label>สิทธิ์ผู้ใช้<input :value="state.profile.role === 'admin' ? 'ผู้ดูแลระบบ' : 'ผู้ใช้งาน'" disabled /></label>
+        <label>สิทธิ์ผู้ใช้<input :value="state.profile.role === 'admin' ? 'ผู้ดูแลระบบ' : state.profile.role === 'staff' ? 'Staff' : 'ผู้ใช้งาน'" disabled /></label>
         <button class="primary large-button">บันทึกข้อมูล</button>
       </form>
 

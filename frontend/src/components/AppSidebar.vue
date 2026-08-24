@@ -23,6 +23,7 @@ const props = defineProps({
   session: Object,
   authMode: String,
   isAdmin: Boolean,
+  canManage: Boolean,
   unreadCount: Number,
 });
 
@@ -30,20 +31,21 @@ const emit = defineEmits(['navigate', 'logout']);
 const menuOpen = ref(false);
 const logoUrl = `${import.meta.env.BASE_URL}meetplanning-logo.png`;
 
-const roleText = computed(() => props.isAdmin ? 'ผู้ดูแลระบบ' : 'ผู้ใช้งาน');
+const roleText = computed(() => props.isAdmin ? 'ผู้ดูแลระบบ' : props.session?.user?.role === 'staff' ? 'Staff' : 'ผู้ใช้งาน');
 const userName = computed(() => props.session?.user?.name || props.session?.user?.email || 'ผู้ใช้งาน');
 
 const menuItems = computed(() => {
   const items = [
     { key: 'dashboard', label: 'หน้าหลัก', icon: Home, show: true },
     { key: 'reserve', label: 'ค้นหาและจองห้อง', icon: Search, show: true },
-    { key: 'history', label: 'ประวัติการจอง', icon: History, show: !props.isAdmin },
+    { key: 'history', label: 'ประวัติการจอง', icon: History, show: !props.canManage },
     { key: 'notifications', label: 'แจ้งเตือน', icon: Bell, show: true, badge: props.unreadCount || 0 },
-    { key: 'rooms', label: 'จัดการห้องประชุม', icon: Building2, show: props.isAdmin },
-    { key: 'bookings', label: 'รายการจอง/อนุมัติ', icon: CalendarCheck, show: props.isAdmin },
-    { key: 'stats', label: 'สถิติ', icon: BarChart3, show: props.isAdmin },
+    { key: 'rooms', label: 'จัดการห้องประชุม', icon: Building2, show: props.canManage },
+    { key: 'bookings', label: 'รายการจอง/อนุมัติ', icon: CalendarCheck, show: props.canManage },
+    { key: 'stats', label: 'สถิติ', icon: BarChart3, show: props.canManage },
     { key: 'backup', label: 'สำรองข้อมูล', icon: Database, show: props.isAdmin },
     { key: 'settings', label: 'ตั้งค่าระบบ', icon: Settings, show: props.isAdmin },
+    { key: 'users', label: 'จัดการผู้ใช้งาน', icon: UserRound, show: props.isAdmin },
     { key: 'profile', label: 'โปรไฟล์', icon: UserRound, show: Boolean(props.session) },
   ];
   return items.filter((item) => item.show);

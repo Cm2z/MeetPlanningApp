@@ -29,6 +29,7 @@ export function useMeetPlanning() {
   const recurring = ref([]);
   const waitlist = ref([]);
   const notifications = ref([]);
+  const users = ref([]);
   const stats = ref({});
   const dashboard = ref({ roomsReady: 0, todayBookings: 0, unread: 0, upcoming: [] });
   const meta = ref({ branches: [], equipment: [], settings: {} });
@@ -53,6 +54,8 @@ export function useMeetPlanning() {
   const passwordForm = reactive({ currentPassword: '', newPassword: '' });
 
   const isAdmin = computed(() => session.value?.user?.role === 'admin');
+  const isStaff = computed(() => session.value?.user?.role === 'staff');
+  const canManageBookings = computed(() => isAdmin.value || isStaff.value);
   const unreadCount = computed(() => notifications.value.filter((item) => !(item.is_read || item.read_at)).length);
   const notificationItems = computed(() => Array.isArray(notifications.value) ? notifications.value : []);
 
@@ -128,6 +131,12 @@ export function useMeetPlanning() {
     return false;
   }
 
+  function requireManager() {
+    if (canManageBookings.value) return true;
+    notify('เฉพาะผู้ดูแลระบบหรือ Staff เท่านั้น');
+    return false;
+  }
+
   async function loadMeta() {
     try {
       meta.value = await api('/meta');
@@ -177,6 +186,29 @@ export function useMeetPlanning() {
   async function loadMyBookings() {
     if (!session.value) return;
     myBookings.value = await api('/bookings?mine=true');
+  }
+
+  async function loadUsers() {
+    if (!isAdmin.value) return;
+    try { users.value = await api('/admin/users'); } catch (error) { notify(error.message); }
+  }
+
+  async function updateUserRole(user, role) {
+    if (!isAdmin.value) return;
+    try {
+      const result = await api('/admin/users/' + user.id, { method: 'PATCH', body: JSON.stringify({ role }) });
+      user.role = role;
+      notify(result.message);
+      await loadUsers();
+    } catch (error) { notify(error.message); }
+  }
+
+  async function clearUserBookingHistory(user) {
+    if (!isAdmin.value) return;
+    try {
+      const result = await api('/admin/users/' + user.id + '/booking-history', { method: 'DELETE' });
+      notify(result.message + ' (' + result.deletedBookings + ' รายการจอง)');
+    } catch (error) { notify(error.message); }
   }
 
   async function loadRecurring() {
@@ -296,7 +328,7 @@ export function useMeetPlanning() {
     const link = String(item.link || '').toLowerCase();
     const title = String(item.title || '');
     if (link.includes('bookings') || title.includes('จอง')) {
-      if (isAdmin.value) {
+      if (canManageBookings.value) {
         view.value = 'bookings';
         await loadBookings();
       } else {
@@ -396,7 +428,7 @@ export function useMeetPlanning() {
   }
 
   async function setStatus(booking, status) {
-    if (!requireAdmin()) return;
+    if (!requireManager()) return;
     try {
       await api('/bookings/' + booking.id + '/status', { method: 'PATCH', body: JSON.stringify({ status }) });
       notify('อัปเดตสถานะแล้ว');
@@ -439,7 +471,7 @@ export function useMeetPlanning() {
   }
 
   async function loadStats() {
-    if (!requireAdmin()) return;
+    if (!requireManager()) return;
     try { stats.value = await api('/reports/summary'); } catch { stats.value = {}; }
   }
 
@@ -528,7 +560,7 @@ export function useMeetPlanning() {
       await Promise.all([
         loadProfile(),
         loadNotifications(true),
-        isAdmin.value ? loadBookings() : loadMyBookings(),
+        canManageBookings.value ? loadBookings() : loadMyBookings(),
       ]);
     } else {
       dashboard.value = { roomsReady: 0, todayBookings: 0, unread: 0, upcoming: [] };
@@ -548,6 +580,7 @@ export function useMeetPlanning() {
     recurring,
     waitlist,
     notifications,
+    users,
     notificationItems,
     notificationHasMore,
     notificationSearch,
@@ -569,6 +602,8 @@ export function useMeetPlanning() {
     profile,
     passwordForm,
     isAdmin,
+    isStaff,
+    canManageBookings,
     unreadCount,
     statusText,
     notify,
@@ -576,6 +611,7 @@ export function useMeetPlanning() {
     formatDateTime,
     requireLogin,
     requireAdmin,
+    requireManager,
     boot,
     login,
     register,
@@ -585,6 +621,9 @@ export function useMeetPlanning() {
     searchRooms,
     loadRooms: searchRooms,
     loadBookings,
+    loadUsers,
+    updateUserRole,
+    clearUserBookingHistory,
     loadMyBookings,
     loadRecurring,
     loadWaitlist,

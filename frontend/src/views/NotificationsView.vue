@@ -16,6 +16,7 @@ const confirmBox = reactive({
 
 const items = computed(() => props.state?.notificationItems?.value || []);
 const isAdmin = computed(() => Boolean(props.state?.isAdmin?.value));
+const isManager = computed(() => Boolean(props.state?.canManageBookings?.value));
 const hasMore = computed(() => Boolean(props.state?.notificationHasMore?.value));
 const filter = computed(() => props.state?.notificationFilter?.value || 'all');
 const query = computed({
@@ -143,8 +144,8 @@ async function deleteGroup(group) {
     <section class="panel notify-hero">
       <div>
         <p class="eyebrow">ศูนย์แจ้งเตือน</p>
-        <h2>{{ isAdmin ? 'จัดการแจ้งเตือน' : 'แจ้งเตือนของฉัน' }}</h2>
-        <p>{{ isAdmin ? 'กดดูรายละเอียดเพื่ออ่าน จัดการรายการ และไปหน้ารายการจองได้' : 'กดดูรายละเอียดเพื่ออ่านและทำเครื่องหมายว่าอ่านแล้วได้' }}</p>
+        <h2>{{ isManager ? 'จัดการแจ้งเตือน' : 'แจ้งเตือนของฉัน' }}</h2>
+        <p>{{ isManager ? 'กดดูรายละเอียดเพื่ออ่าน จัดการรายการ และไปหน้ารายการจองได้' : 'ติดตามผลคำขอและเปิดดูรายละเอียดการจองของคุณได้ที่นี่' }}</p>
       </div>
       <div class="notify-actions">
         <button class="ghost compact" type="button" @click="refresh">รีเฟรช</button>
@@ -160,7 +161,7 @@ async function deleteGroup(group) {
 
     <div class="notify-layout">
       <section class="notify-list">
-        <template v-if="isAdmin">
+        <template v-if="isManager">
           <article v-for="group in adminGroups" :key="group.name" class="notify-card group-card" :class="{ selected: selected && userName(selected) === group.name }">
             <button class="group-main" type="button" @click="openedGroups[group.name] = !openedGroups[group.name]">
               <span class="avatar">{{ initials(group.name) }}</span>
@@ -181,11 +182,11 @@ async function deleteGroup(group) {
                 <div class="row-actions">
                   <button type="button" @click="openItem(item)">ดูรายละเอียด</button>
                   <button type="button" @click="goToWork(item)">ไปหน้ารายการ</button>
-                  <button class="danger" type="button" @click="deleteItem(item)">ลบ</button>
+                  <button v-if="isAdmin" class="danger" type="button" @click="deleteItem(item)">ลบ</button>
                 </div>
               </article>
             </div>
-            <button class="danger soft" type="button" @click="deleteGroup(group)">ลบกลุ่มนี้</button>
+            <button v-if="isAdmin" class="danger soft" type="button" @click="deleteGroup(group)">ลบกลุ่มนี้</button>
           </article>
         </template>
 
@@ -211,12 +212,15 @@ async function deleteGroup(group) {
     <div v-if="selected" class="notification-modal-backdrop" @click.self="closeDetails">
       <section class="notification-detail-modal" role="dialog" aria-modal="true" aria-labelledby="notification-detail-title">
         <button class="notification-modal-close" type="button" aria-label="ปิดรายละเอียดแจ้งเตือน" @click="closeDetails">ปิด</button>
-        <p class="eyebrow">รายละเอียดแจ้งเตือน</p>
-        <h3 id="notification-detail-title">{{ selected.title }}</h3>
-        <p class="notification-detail-message">{{ cleanMessage(selected.message) }}</p>
-        <small>{{ props.state?.formatDateTime?.(selected.created_at) }}</small>
+        <div class="notification-detail-icon">✓</div>
+        <div class="notification-detail-heading">
+          <p class="eyebrow">รายละเอียดแจ้งเตือน</p>
+          <h3 id="notification-detail-title">{{ selected.title }}</h3>
+        </div>
+        <div class="notification-detail-message">{{ cleanMessage(selected.message) }}</div>
+        <div class="notification-detail-time"><span>วันและเวลาที่แจ้ง</span><strong>{{ props.state?.formatDateTime?.(selected.created_at) }}</strong></div>
         <div class="notification-modal-actions">
-          <button v-if="isAdmin" class="primary compact" type="button" @click="goToWork(selected)">ไปหน้ารายการจอง</button>
+          <button class="primary compact" type="button" @click="goToWork(selected)">{{ isManager ? 'ไปหน้ารายการจอง' : 'ดูประวัติการจอง' }}</button>
           <button v-if="isAdmin" class="danger compact" type="button" @click="deleteItem(selected)">ลบ</button>
           <button class="ghost compact" type="button" @click="closeDetails">ปิดหน้าต่าง</button>
         </div>
@@ -264,13 +268,21 @@ async function deleteGroup(group) {
   box-shadow: 0 24px 80px rgba(7, 34, 74, 0.35);
 }
 
+.notification-detail-icon { width:52px;height:52px;display:grid;place-items:center;border-radius:50%;background:#dcf8e9;color:#087653;font-size:24px;font-weight:900; }
+.notification-detail-heading { margin-top:14px;padding-bottom:16px;border-bottom:1px solid #dbe7f4; }
+.notification-detail-time { display:grid;gap:5px;margin-top:14px;padding:14px;border:1px solid #cfe0f3;border-radius:10px;background:#f7faff; }
+.notification-detail-time span { color:#67809e;font-size:.85rem; }
+
 .notification-detail-modal h3 {
   margin: 6px 36px 12px 0;
   font-size: 1.45rem;
 }
 
 .notification-detail-message {
-  margin: 0 0 12px;
+  margin: 16px 0 0;
+  padding: 16px;
+  border-radius: 10px;
+  background: #f2f8ff;
   line-height: 1.7;
   white-space: pre-wrap;
 }

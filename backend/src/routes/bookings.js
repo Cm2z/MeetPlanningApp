@@ -122,8 +122,7 @@ router.post('/', requireAuth, body('roomId').isInt({ min: 1 }), body('title').no
     }
     await connection.commit();
     await audit(req.user.id, 'create_booking', 'booking', result.insertId, { title, roomId, startAt, endAt });
-    await notify({ roleTarget: 'admin', title: 'มีคำขอจองใหม่', message: req.user.name + ': ' + title, link: '/bookings' });
-    await notify({ roleTarget: 'staff', title: 'มีคำขอจองใหม่', message: req.user.name + ': ' + title, link: '/bookings' });
+    await notify({ roleTarget: 'all', title: 'มีคำขอจองใหม่', message: req.user.name + ': ' + title, link: '/bookings' });
     const [[createdBooking]] = await pool.execute(
       'SELECT b.*, r.name AS room_name, r.building, r.floor, br.name AS branch_name, u.name AS requester_name, u.email AS requester_email FROM bookings b JOIN rooms r ON r.id = b.room_id LEFT JOIN branches br ON br.id = r.branch_id JOIN users u ON u.id = b.user_id WHERE b.id = ? LIMIT 1',
       [result.insertId]

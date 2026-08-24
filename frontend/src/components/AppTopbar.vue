@@ -18,7 +18,7 @@ defineProps({
 
     <div v-if="session?.user" class="user-pill">
       <ShieldCheck />
-      <span>{{ session.user.name || 'ผู้ใช้งาน' }} · {{ isAdmin ? 'ผู้ดูแลระบบ' : 'ผู้ใช้งาน' }}</span>
+      <span>{{ session.user.name || 'ผู้ใช้งาน' }} · {{ isAdmin ? 'ผู้ดูแลระบบ' : session.user.role === 'staff' ? 'Staff' : 'ผู้ใช้งาน' }}</span>
     </div>
   </header>
 </template>

@@ -15,6 +15,7 @@ import ReserveView from './views/ReserveView.vue';
 import SettingsView from './views/SettingsView.vue';
 import StatsView from './views/StatsView.vue';
 import UserHistoryView from './views/UserHistoryView.vue';
+import UserManagementView from './views/UserManagementView.vue';
 import { useMeetPlanning } from './composables/useMeetPlanning.js';
 
 const state = useMeetPlanning();
@@ -30,6 +31,7 @@ const titleMap = {
   stats: 'สถิติการใช้งาน',
   backup: 'สำรองและกู้คืนข้อมูล',
   settings: 'ตั้งค่าระบบ',
+  users: 'จัดการผู้ใช้งาน',
 };
 
 const pageTitle = computed(() => titleMap[state.view.value] || 'หน้าหลัก');
@@ -46,7 +48,8 @@ function go(target) {
     state.notify('เมนูนี้ถูกนำออกจากระบบแล้ว');
     return;
   }
-  if ((target === 'bookings' || target === 'rooms') && !state.isAdmin.value) { state.view.value = 'dashboard'; return state.notify('หน้านี้สำหรับผู้ดูแลระบบเท่านั้น'); }
+  if (['bookings', 'rooms', 'stats'].includes(target) && !state.canManageBookings.value) { state.view.value = 'dashboard'; return state.notify('หน้านี้สำหรับผู้ดูแลระบบหรือ Staff เท่านั้น'); }
+  if (['backup', 'settings', 'users'].includes(target) && !state.isAdmin.value) { state.view.value = 'dashboard'; return state.notify('หน้านี้สำหรับ Admin เท่านั้น'); }
   state.view.value = target;
   if (target === 'reserve') state.searchRooms?.();
   if (target === 'bookings') state.loadBookings?.();
@@ -55,6 +58,7 @@ function go(target) {
   if (target === 'profile') state.loadProfile?.();
   if (target === 'stats') state.loadStats?.();
   if (target === 'settings') state.loadSettings?.();
+  if (target === 'users') state.loadUsers?.();
 }
 
 onMounted(async () => {
@@ -77,6 +81,7 @@ onMounted(async () => {
       :view="state.view.value"
       :session="state.session.value"
       :is-admin="state.isAdmin.value"
+      :can-manage="state.canManageBookings.value"
       :unread-count="state.unreadCount.value"
       @navigate="go"
       @logout="state.logout"
@@ -95,12 +100,13 @@ onMounted(async () => {
       <NotificationsView v-else-if="state.view.value === 'notifications'" :state="state" />
       <ProfileView v-else-if="state.view.value === 'profile'" :state="state" />
       <!-- FINAL_BOOKINGS_VIEW_GUARD -->
-      <BookingsView v-else-if="state.view.value === 'bookings' && state.isAdmin.value" :state="state" />
-      <DashboardView v-else-if="state.view.value === 'bookings' && !state.isAdmin.value" :state="state" />
-      <RoomManagementView v-else-if="state.view.value === 'rooms' && state.isAdmin.value" :state="state" />
+      <BookingsView v-else-if="state.view.value === 'bookings' && state.canManageBookings.value" :state="state" />
+      <DashboardView v-else-if="state.view.value === 'bookings' && !state.canManageBookings.value" :state="state" />
+      <RoomManagementView v-else-if="state.view.value === 'rooms' && state.canManageBookings.value" :state="state" />
       <StatsView v-else-if="state.view.value === 'stats'" :state="state" />
       <BackupView v-else-if="state.view.value === 'backup'" :state="state" />
       <SettingsView v-else-if="state.view.value === 'settings'" :state="state" />
+      <UserManagementView v-else-if="state.view.value === 'users' && state.isAdmin.value" :state="state" />
       <DashboardView v-else :state="state" />
     </main>
 

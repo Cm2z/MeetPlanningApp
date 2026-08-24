@@ -50,7 +50,7 @@ router.get('/', requireAuth, async (req, res, next) => {
     );
 
     const unread = await scalar(
-      "SELECT COUNT(*) AS total FROM notifications WHERE is_read = 0 AND (user_id = ? OR role_target IN (?, 'admin_staff'))",
+      "SELECT COUNT(*) AS total FROM notifications WHERE is_read = 0 AND (user_id = ? OR role_target IN (?, 'admin_staff', 'all'))",
       [req.user.id, req.user.role]
     );
 

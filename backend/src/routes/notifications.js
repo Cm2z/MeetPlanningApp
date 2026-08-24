@@ -24,7 +24,7 @@ async function ensureNotificationColumns() {
 function accessWhere(req) {
   const id = userId(req);
   if (req.user.role === 'admin' || req.user.role === 'staff') {
-    return { where: "(user_id = ? OR role_target IN ('admin','staff','admin_staff'))", params: [id] };
+    return { where: "(user_id = ? OR role_target IN ('admin','staff','admin_staff','all'))", params: [id] };
   }
   return { where: 'user_id = ? AND user_deleted_at IS NULL', params: [id] };
 }
