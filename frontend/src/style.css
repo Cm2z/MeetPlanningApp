@@ -4558,6 +4558,305 @@ button.primary:hover {
   object-position: left center;
 }
 
+/* MEETPLANNING_UNIFIED_NAVY_THEME_20260825 */
+body {
+  color: #142f50;
+  background: #eef5fc;
+}
+
+.app-shell {
+  background: #eef5fc;
+}
+
+.app-shell .main-content,
+.app-shell .workspace,
+.app-shell main.workspace {
+  background: #eef5fc !important;
+}
+
+.app-shell .sidebar {
+  border-right-color: #d4e1f0 !important;
+  background: #ffffff !important;
+  color: #173d67 !important;
+  box-shadow: 6px 0 24px rgba(16, 45, 92, .04) !important;
+}
+
+.app-shell .sidebar-user {
+  border-color: #c8dbef !important;
+  background: #f4f8fd !important;
+  color: #163f6d !important;
+}
+
+.app-shell .sidebar-user svg {
+  color: #1f6fca !important;
+}
+
+.app-shell .sidebar-user small {
+  background: #1f6fca !important;
+  color: #ffffff !important;
+}
+
+.app-shell .sidebar-menu button,
+.app-shell .logout {
+  color: #24517e !important;
+}
+
+.app-shell .sidebar-menu button:hover {
+  background: #edf5ff !important;
+  color: #155da9 !important;
+}
+
+.app-shell .sidebar-menu button.active {
+  background: #dcecff !important;
+  color: #124f91 !important;
+  box-shadow: inset 3px 0 0 #1f6fca !important;
+}
+
+.app-shell .sidebar-menu button > small {
+  background: #1f6fca !important;
+  color: #ffffff !important;
+}
+
+.app-shell .topbar p,
+.app-shell .eyebrow {
+  color: #1f6fca !important;
+}
+
+.app-shell .topbar h1,
+.app-shell h1,
+.app-shell h2,
+.app-shell h3 {
+  color: #102d50;
+}
+
+.app-shell .user-pill {
+  border-color: #c8dbef !important;
+  background: #ffffff !important;
+  color: #173d67 !important;
+  box-shadow: 0 5px 16px rgba(16, 45, 92, .06) !important;
+}
+
+.app-shell .user-pill svg {
+  color: #1f6fca !important;
+}
+
+.app-shell .panel,
+.app-shell .metric,
+.app-shell .calendar-item,
+.app-shell .simple-row,
+.app-shell .user-row,
+.app-shell .room-card,
+.app-shell .booking-admin-card,
+.app-shell .notify-card,
+.app-shell .group-card,
+.app-shell .stat-card,
+.app-shell .settings-card {
+  border-color: #d4e1f0 !important;
+  background: #ffffff !important;
+  color: #142f50 !important;
+  box-shadow: 0 8px 22px rgba(16, 45, 92, .045) !important;
+}
+
+.app-shell .panel:hover,
+.app-shell .room-card:hover {
+  border-color: #bdd3ec !important;
+}
+
+.app-shell input,
+.app-shell select,
+.app-shell textarea {
+  border-color: #bfd3ea !important;
+  background: #ffffff !important;
+  color: #17395f !important;
+}
+
+.app-shell input::placeholder,
+.app-shell textarea::placeholder {
+  color: #8ca0b7 !important;
+}
+
+.app-shell input:focus,
+.app-shell select:focus,
+.app-shell textarea:focus {
+  outline: none !important;
+  border-color: #1f6fca !important;
+  box-shadow: 0 0 0 3px #deebfb !important;
+}
+
+.app-shell label {
+  color: #294d72 !important;
+}
+
+.app-shell .primary,
+.app-shell button.primary,
+.app-shell .modal-submit-button {
+  border-color: #1f6fca !important;
+  background: #1f6fca !important;
+  color: #ffffff !important;
+  box-shadow: 0 5px 12px rgba(31, 111, 202, .16) !important;
+}
+
+.app-shell .primary:hover,
+.app-shell button.primary:hover,
+.app-shell .modal-submit-button:hover {
+  background: #185fac !important;
+}
+
+.app-shell .ghost,
+.app-shell button.ghost {
+  border-color: #bfd3ea !important;
+  background: #ffffff !important;
+  color: #155da9 !important;
+}
+
+.app-shell .ghost:hover,
+.app-shell button.ghost:hover {
+  border-color: #77a8dd !important;
+  background: #edf5ff !important;
+}
+
+.app-shell .danger,
+.app-shell button.danger {
+  border-color: #efb3b3 !important;
+  background: #fff7f7 !important;
+  color: #b62c2c !important;
+  box-shadow: none !important;
+}
+
+.app-shell .status.pending {
+  background: #fff2d4 !important;
+  color: #ad6500 !important;
+}
+
+.app-shell .status.approved {
+  background: #e1efff !important;
+  color: #1764b2 !important;
+}
+
+.app-shell .status.completed,
+.app-shell .status.checked_in {
+  background: #ddf7eb !important;
+  color: #0d7955 !important;
+}
+
+.app-shell .status.rejected,
+.app-shell .status.cancelled,
+.app-shell .status.no_show {
+  background: #ffebeb !important;
+  color: #b62c2c !important;
+}
+
+.app-shell .admin-help,
+.app-shell .notify-hero,
+.app-shell .dashboard-hero {
+  border-color: #d4e1f0 !important;
+  background: #ffffff !important;
+  color: #142f50 !important;
+}
+
+.app-shell .admin-help > div > p,
+.app-shell .notify-hero .eyebrow {
+  color: #1f6fca !important;
+}
+
+.app-shell .admin-steps > div,
+.app-shell .notify-toolbar,
+.app-shell .filter-grid,
+.app-shell .search-panel {
+  border-color: #d4e1f0 !important;
+  background: #f8fbff !important;
+}
+
+.app-shell .admin-steps b,
+.app-shell .step-number {
+  background: #1f6fca !important;
+  color: #ffffff !important;
+}
+
+.app-shell .table-head {
+  border-color: #d4e1f0 !important;
+  background: #f2f7fd !important;
+  color: #3b5d7e !important;
+}
+
+.app-shell .table-row,
+.app-shell .booking-row {
+  border-color: #e1eaf5 !important;
+}
+
+.app-shell .table-row:hover,
+.app-shell .booking-row:hover {
+  background: #f8fbff !important;
+}
+
+.app-shell .tags small,
+.app-shell .pill,
+.app-shell .badge {
+  border-color: #c8dcf1 !important;
+  background: #eaf4ff !important;
+  color: #1a63ac !important;
+}
+
+.app-shell .empty,
+.app-shell .empty-box,
+.app-shell .notification-empty {
+  border-color: #c5d8ed !important;
+  background: #f8fbff !important;
+  color: #6b819a !important;
+}
+
+.app-shell .room-booking-modal,
+.app-shell .confirm-modal,
+.app-shell .notification-detail-modal,
+.app-shell .booking-detail-modal {
+  border-color: #c8daee !important;
+  background: #ffffff !important;
+  color: #142f50 !important;
+}
+
+.app-shell .room-modal-info,
+.app-shell .modal-booking-form {
+  background: #ffffff !important;
+}
+
+.app-shell .room-modal-facts span,
+.app-shell .fact-static,
+.app-shell .modal-time-editor,
+.app-shell .detail-message {
+  border-color: #d1e0f0 !important;
+  background: #f5f9fe !important;
+  color: #284b70 !important;
+}
+
+.app-shell .notification-modal-backdrop,
+.app-shell .modal-backdrop,
+.app-shell .room-modal-backdrop {
+  background: rgba(9, 30, 60, .58) !important;
+  backdrop-filter: blur(3px);
+}
+
+.app-shell a {
+  color: #1c67b7;
+}
+
+.app-shell ::selection {
+  background: #cfe4fc;
+  color: #102d50;
+}
+
+@media (max-width: 760px) {
+  .app-shell .mobile-nav-bar {
+    border-bottom-color: #d4e1f0 !important;
+    background: #ffffff !important;
+  }
+
+  .app-shell .hamburger-button {
+    color: #155da9 !important;
+    background: #edf5ff !important;
+  }
+}
+/* MEETPLANNING_UNIFIED_NAVY_THEME_20260825_END */
+
 @media (max-width: 760px) {
   .mobile-logo {
     width: 150px !important;
