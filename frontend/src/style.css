@@ -4857,6 +4857,40 @@ body {
 }
 /* MEETPLANNING_UNIFIED_NAVY_THEME_20260825_END */
 
+/* MEETPLANNING_FIXED_DESKTOP_SIDEBAR_20260825 */
+@media (min-width: 1181px) {
+  .app-shell {
+    align-items: start;
+  }
+
+  .app-shell > .sidebar {
+    position: sticky !important;
+    top: 0 !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #bfd3ea transparent;
+  }
+
+  .app-shell > .sidebar::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .app-shell > .sidebar::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: #bfd3ea;
+  }
+
+  .app-shell > .main-content {
+    min-width: 0;
+  }
+}
+/* MEETPLANNING_FIXED_DESKTOP_SIDEBAR_20260825_END */
+
 @media (max-width: 760px) {
   .mobile-logo {
     width: 150px !important;
