@@ -4891,6 +4891,404 @@ body {
 }
 /* MEETPLANNING_FIXED_DESKTOP_SIDEBAR_20260825_END */
 
+/* MEETPLANNING_BOOKING_HERO_AND_ROLE_BADGE_COLORS_20260825 */
+.app-shell .booking-hero h2 {
+  color: #ffffff !important;
+}
+
+.app-shell .sidebar-user small {
+  border-color: #16a34a !important;
+  background: #16a34a !important;
+  color: #ffffff !important;
+}
+/* MEETPLANNING_BOOKING_HERO_AND_ROLE_BADGE_COLORS_20260825_END */
+
+/* MEETPLANNING_BOOKING_DESIGN_SYSTEM_ALL_PAGES_20260825 */
+.app-shell .dashboard-mobile-page,
+.app-shell .reserve-popup-page,
+.app-shell .notify-page,
+.app-shell .room-admin-page,
+.app-shell .stats-page,
+.app-shell .user-management-page,
+.app-shell .profile-page {
+  display: grid;
+  gap: 16px;
+}
+
+/* Shared navy hero used by operational pages. */
+.app-shell .reserve-search-wide,
+.app-shell .notify-hero,
+.app-shell .room-admin-header,
+.app-shell .stats-heading,
+.app-shell .user-management-hero,
+.app-shell .profile-page .admin-help {
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 136px !important;
+  padding: 24px 28px !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: #102d5c !important;
+  color: #ffffff !important;
+  box-shadow: 0 14px 30px rgba(16, 45, 92, .15) !important;
+}
+
+.app-shell .reserve-search-wide::after,
+.app-shell .notify-hero::after,
+.app-shell .room-admin-header::after,
+.app-shell .stats-heading::after,
+.app-shell .user-management-hero::after,
+.app-shell .profile-page .admin-help::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: -105px;
+  right: -55px;
+  width: 270px;
+  height: 270px;
+  border-radius: 50%;
+  background: rgba(57, 133, 224, .2);
+  pointer-events: none;
+}
+
+.app-shell .reserve-search-wide > *,
+.app-shell .notify-hero > *,
+.app-shell .room-admin-header > *,
+.app-shell .stats-heading > *,
+.app-shell .user-management-hero > *,
+.app-shell .profile-page .admin-help > * {
+  position: relative;
+  z-index: 1;
+}
+
+.app-shell .reserve-search-wide h2,
+.app-shell .notify-hero h2,
+.app-shell .room-admin-header h2,
+.app-shell .stats-heading h2,
+.app-shell .user-management-hero h2,
+.app-shell .profile-page .admin-help h2 {
+  color: #ffffff !important;
+}
+
+.app-shell .reserve-search-wide p,
+.app-shell .notify-hero p,
+.app-shell .room-admin-header p,
+.app-shell .stats-heading p,
+.app-shell .user-management-hero p,
+.app-shell .profile-page .admin-help p {
+  color: #80b4f3 !important;
+}
+
+.app-shell .reserve-search-wide span,
+.app-shell .notify-hero > div > p:last-child,
+.app-shell .room-admin-header span,
+.app-shell .stats-heading span,
+.app-shell .user-management-hero span,
+.app-shell .profile-page .admin-help span {
+  color: #cad9ec !important;
+}
+
+.app-shell .reserve-search-wide .ghost,
+.app-shell .notify-hero .ghost,
+.app-shell .room-admin-header .ghost,
+.app-shell .stats-heading .ghost,
+.app-shell .user-management-hero .ghost,
+.app-shell .profile-page .admin-help .ghost {
+  border-color: rgba(255,255,255,.3) !important;
+  background: rgba(255,255,255,.1) !important;
+  color: #ffffff !important;
+}
+
+.app-shell .reserve-search-wide .primary,
+.app-shell .notify-hero .primary,
+.app-shell .room-admin-header .primary,
+.app-shell .stats-heading .primary {
+  border: 1px solid rgba(255,255,255,.26) !important;
+  background: #2676cf !important;
+  color: #ffffff !important;
+}
+
+/* Search and filter toolbars mirror the booking console. */
+.app-shell .notify-toolbar,
+.app-shell .user-toolbar,
+.app-shell .reserve-search-fields,
+.app-shell .filter-grid {
+  padding: 16px 18px !important;
+  border: 1px solid #d5e2f2 !important;
+  border-radius: 10px !important;
+  background: #f8fbff !important;
+  box-shadow: none !important;
+}
+
+.app-shell .reserve-search-wide .reserve-search-fields {
+  margin-top: 15px;
+  background: rgba(255,255,255,.08) !important;
+  border-color: rgba(255,255,255,.18) !important;
+}
+
+.app-shell .reserve-search-wide .reserve-search-fields input {
+  border-color: rgba(255,255,255,.65) !important;
+  background: #ffffff !important;
+}
+
+/* Dashboard summary cards. */
+.app-shell .dashboard-summary,
+.app-shell .stats-metrics {
+  gap: 12px !important;
+}
+
+.app-shell .metric-card,
+.app-shell .stat-summary {
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 122px !important;
+  padding: 17px 18px 17px 22px !important;
+  border: 1px solid #d5e2f2 !important;
+  border-radius: 9px !important;
+  background: #ffffff !important;
+  color: #667d98 !important;
+  box-shadow: 0 6px 16px rgba(22,55,94,.04) !important;
+}
+
+.app-shell .metric-card::before,
+.app-shell .stat-summary::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: #2b79cf;
+}
+
+.app-shell .metric-card.ready::before,
+.app-shell .stat-summary.green::before {
+  background: #16966a;
+}
+
+.app-shell .metric-card.busy::before,
+.app-shell .stat-summary.amber::before {
+  background: #e6a42c;
+}
+
+.app-shell .metric-card.notice::before {
+  background: #6f63ce;
+}
+
+.app-shell .metric-card strong,
+.app-shell .stat-summary strong {
+  color: #15385f !important;
+}
+
+.app-shell .metric-card span,
+.app-shell .metric-card small,
+.app-shell .stat-summary span,
+.app-shell .stat-summary small {
+  color: #667d98 !important;
+}
+
+/* All content cards use the booking-result surface. */
+.app-shell .upcoming-panel,
+.app-shell .stats-panel,
+.app-shell .user-role-card,
+.app-shell .profile-grid > .panel,
+.app-shell .admin-grid > .panel,
+.app-shell .admin-grid > form,
+.app-shell .notify-card,
+.app-shell .room-admin-card,
+.app-shell .room-picker-card {
+  border: 1px solid #d5e2f2 !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 22px rgba(16,45,92,.045) !important;
+}
+
+.app-shell .upcoming-panel,
+.app-shell .stats-panel,
+.app-shell .profile-grid > .panel,
+.app-shell .admin-grid > .panel,
+.app-shell .admin-grid > form {
+  overflow: hidden;
+}
+
+.app-shell .upcoming-panel .section-heading,
+.app-shell .stats-panel > header,
+.app-shell .profile-grid > .panel > h3,
+.app-shell .admin-grid > .panel > h2,
+.app-shell .admin-grid > form > h2 {
+  margin: -20px -20px 18px !important;
+  padding: 17px 20px !important;
+  border-bottom: 1px solid #e1eaf5 !important;
+  background: #f8fbff !important;
+  color: #15385f !important;
+}
+
+.app-shell .profile-grid > .panel > h3 {
+  margin: -20px -20px 4px !important;
+}
+
+/* List rows share compact spacing and clear hover feedback. */
+.app-shell .upcoming-item,
+.app-shell .user-stat-list > div,
+.app-shell .notify-subitem,
+.app-shell .user-role-card {
+  border-color: #e1eaf5 !important;
+  background: #ffffff !important;
+}
+
+.app-shell .upcoming-item:hover,
+.app-shell .user-stat-list > div:hover,
+.app-shell .notify-subitem:hover,
+.app-shell .user-role-card:hover {
+  border-color: #bdd3ec !important;
+  background: #f8fbff !important;
+}
+
+.app-shell .user-role-card {
+  position: relative;
+  overflow: hidden;
+  border-left: 5px solid #2b79cf !important;
+}
+
+.app-shell .user-role-card:has(.role-badge.staff) {
+  border-left-color: #16966a !important;
+}
+
+.app-shell .user-role-card:has(.role-badge.admin) {
+  border-left-color: #6f63ce !important;
+}
+
+.app-shell .user-avatar,
+.app-shell .avatar,
+.app-shell .requester-avatar {
+  background: #e8f2fd !important;
+  color: #1769bd !important;
+}
+
+/* Room cards follow the same border, badges and action language. */
+.app-shell .room-picker-card,
+.app-shell .room-admin-card {
+  overflow: hidden !important;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.app-shell .room-picker-card:hover,
+.app-shell .room-admin-card:hover {
+  transform: translateY(-2px);
+  border-color: #77a8dd !important;
+  box-shadow: 0 13px 28px rgba(16,45,92,.1) !important;
+}
+
+.app-shell .room-picker-card.selected {
+  border-color: #1f6fca !important;
+  box-shadow: 0 0 0 2px #deebfb !important;
+}
+
+.app-shell .room-admin-facts span,
+.app-shell .room-picker-meta span,
+.app-shell .soft-pill {
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: #eaf4ff !important;
+  color: #1a63ac !important;
+}
+
+.app-shell .room-status.available {
+  background: #ddf7eb !important;
+  color: #0d7955 !important;
+}
+
+/* Notification cards: blue identity instead of the old green surface. */
+.app-shell .notify-card,
+.app-shell .group-card {
+  border-left: 5px solid #2b79cf !important;
+}
+
+.app-shell .notify-card.unread,
+.app-shell .group-card:has(.pill.unread) {
+  border-left-color: #e6a42c !important;
+}
+
+.app-shell .group-main {
+  border-color: #d5e2f2 !important;
+  background: #f8fbff !important;
+  color: #15385f !important;
+}
+
+.app-shell .notify-toolbar button.active {
+  border-color: #1f6fca !important;
+  background: #1f6fca !important;
+  color: #ffffff !important;
+}
+
+/* Forms and modals align with the same visual rhythm. */
+.app-shell .profile-grid,
+.app-shell .admin-grid {
+  gap: 14px !important;
+}
+
+.app-shell .profile-grid .form,
+.app-shell .admin-grid .form {
+  gap: 15px !important;
+}
+
+.app-shell .profile-grid input,
+.app-shell .admin-grid input,
+.app-shell .admin-grid textarea {
+  min-height: 46px !important;
+  border-radius: 7px !important;
+}
+
+.app-shell .profile-grid .large-button,
+.app-shell .admin-grid .primary {
+  min-height: 48px !important;
+  border-radius: 7px !important;
+}
+
+.app-shell .room-editor,
+.app-shell .notification-detail-modal,
+.app-shell .booking-detail-modal,
+.app-shell .confirm-modal {
+  border: 1px solid #c8daee !important;
+  border-radius: 14px !important;
+  box-shadow: 0 28px 80px rgba(14,37,63,.3) !important;
+}
+
+.app-shell .room-editor > header,
+.app-shell .booking-detail-header,
+.app-shell .notification-detail-heading {
+  border-bottom-color: #dce7f1 !important;
+}
+
+@media (max-width: 760px) {
+  .app-shell .reserve-search-wide,
+  .app-shell .notify-hero,
+  .app-shell .room-admin-header,
+  .app-shell .stats-heading,
+  .app-shell .user-management-hero,
+  .app-shell .profile-page .admin-help {
+    min-height: 0 !important;
+    padding: 20px !important;
+  }
+
+  .app-shell .room-admin-header,
+  .app-shell .user-management-hero,
+  .app-shell .profile-page .admin-help {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  .app-shell .upcoming-panel .section-heading,
+  .app-shell .stats-panel > header,
+  .app-shell .profile-grid > .panel > h3,
+  .app-shell .admin-grid > .panel > h2,
+  .app-shell .admin-grid > form > h2 {
+    margin-left: -16px !important;
+    margin-right: -16px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+/* MEETPLANNING_BOOKING_DESIGN_SYSTEM_ALL_PAGES_20260825_END */
+
 @media (max-width: 760px) {
   .mobile-logo {
     width: 150px !important;
