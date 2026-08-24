@@ -1,6 +1,11 @@
 
 <script setup>
+import { ref } from 'vue';
+import BookingDetailModal from '../components/BookingDetailModal.vue';
+
 defineProps({ state: Object });
+
+const selectedBooking = ref(null);
 </script>
 
 <template>
@@ -37,11 +42,19 @@ defineProps({ state: Object });
           <small>ถึง {{ state.formatDateTime(booking.end_at) }}</small>
         </div>
         <div class="actions">
+          <button class="ghost compact" type="button" @click="selectedBooking = booking">ดูรายละเอียด</button>
           <button v-if="booking.status === 'pending'" class="primary compact" @click="state.setStatus(booking, 'approved')">อนุมัติ</button>
           <button v-if="booking.status === 'pending'" class="danger ghost compact" @click="state.setStatus(booking, 'rejected')">ปฏิเสธ</button>
           <button v-if="booking.status === 'approved'" class="ghost compact" @click="state.setStatus(booking, 'completed')">เสร็จสิ้น</button>
         </div>
       </article>
     </div>
+
+    <BookingDetailModal
+      v-if="selectedBooking"
+      :booking="selectedBooking"
+      :state="state"
+      @close="selectedBooking = null"
+    />
   </section>
 </template>

@@ -1,5 +1,10 @@
 <script setup>
+import { ref } from 'vue';
+import BookingDetailModal from '../components/BookingDetailModal.vue';
+
 defineProps({ state: Object });
+
+const selectedBooking = ref(null);
 </script>
 
 <template>
@@ -35,11 +40,19 @@ defineProps({ state: Object });
         </div>
         <span class="status" :class="booking.status">{{ state.statusText[booking.status] || booking.status }}</span>
         <div class="actions">
+          <button class="ghost compact" type="button" @click="selectedBooking = booking">ดูรายละเอียด</button>
           <button v-if="booking.status === 'approved' && booking.can_check_in" class="primary compact" @click="state.checkInBooking(booking)">Check-in</button>
           <span v-else-if="booking.status === 'approved'" class="muted">Check-in ได้เมื่อถึงเวลา</span>
           <span v-else class="muted">-</span>
         </div>
       </div>
     </div>
+
+    <BookingDetailModal
+      v-if="selectedBooking"
+      :booking="selectedBooking"
+      :state="state"
+      @close="selectedBooking = null"
+    />
   </section>
 </template>

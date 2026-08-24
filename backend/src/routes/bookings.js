@@ -73,7 +73,7 @@ router.get('/', requireAuth, async (req, res, next) => {
     }
 
     const [rows] = await pool.execute(
-      'SELECT b.*, r.name AS room_name, r.building, r.floor, br.name AS branch_name, u.name AS requester_name, approver.name AS approver_name ' +
+      'SELECT b.*, r.name AS room_name, r.building, r.floor, br.name AS branch_name, u.name AS requester_name, u.email AS requester_email, approver.name AS approver_name ' +
       'FROM bookings b ' +
       'JOIN rooms r ON r.id = b.room_id ' +
       'LEFT JOIN branches br ON br.id = r.branch_id ' +
@@ -125,7 +125,7 @@ router.post('/', requireAuth, body('roomId').isInt({ min: 1 }), body('title').no
     await notify({ roleTarget: 'admin', title: 'มีคำขอจองใหม่', message: req.user.name + ': ' + title, link: '/bookings' });
     await notify({ roleTarget: 'staff', title: 'มีคำขอจองใหม่', message: req.user.name + ': ' + title, link: '/bookings' });
     const [[createdBooking]] = await pool.execute(
-      'SELECT b.*, r.name AS room_name, r.building, r.floor, br.name AS branch_name, u.name AS requester_name FROM bookings b JOIN rooms r ON r.id = b.room_id LEFT JOIN branches br ON br.id = r.branch_id JOIN users u ON u.id = b.user_id WHERE b.id = ? LIMIT 1',
+      'SELECT b.*, r.name AS room_name, r.building, r.floor, br.name AS branch_name, u.name AS requester_name, u.email AS requester_email FROM bookings b JOIN rooms r ON r.id = b.room_id LEFT JOIN branches br ON br.id = r.branch_id JOIN users u ON u.id = b.user_id WHERE b.id = ? LIMIT 1',
       [result.insertId]
     );
     res.status(201).json({
