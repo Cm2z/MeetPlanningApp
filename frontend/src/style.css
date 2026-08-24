@@ -5289,6 +5289,44 @@ body {
 }
 /* MEETPLANNING_BOOKING_DESIGN_SYSTEM_ALL_PAGES_20260825_END */
 
+/* MEETPLANNING_TRUE_FIXED_DESKTOP_SIDEBAR_20260825 */
+@media (min-width: 1181px) {
+  .app-shell {
+    grid-template-columns: 280px minmax(0, 1fr) !important;
+  }
+
+  .app-shell > .sidebar {
+    position: fixed !important;
+    z-index: 100 !important;
+    inset: 0 auto 0 0 !important;
+    width: 280px !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .app-shell > .main-content {
+    grid-column: 2 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+.app-shell .reserve-search-wide .reserve-search-fields label,
+.app-shell .reserve-search-wide .reserve-search-fields label > span {
+  color: #ffffff !important;
+}
+
+.app-shell .reserve-search-wide .soft-pill {
+  border: 0 !important;
+  background: #eaf4ff !important;
+  color: #155da9 !important;
+  opacity: 1 !important;
+}
+/* MEETPLANNING_TRUE_FIXED_DESKTOP_SIDEBAR_20260825_END */
+
 @media (max-width: 760px) {
   .mobile-logo {
     width: 150px !important;
