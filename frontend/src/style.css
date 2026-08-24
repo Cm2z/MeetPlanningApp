@@ -5574,6 +5574,74 @@ body {
 }
 /* MEETPLANNING_IPAD_TABLET_LAYOUT_20260825_END */
 
+/* MEETPLANNING_IPAD_SCROLL_UNLOCK_20260825 */
+@media (min-width: 761px) and (max-width: 1180px) {
+  html {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: auto !important;
+  }
+
+  body,
+  #app {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    touch-action: pan-y !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .app-shell {
+    position: relative !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    max-height: none !important;
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+  }
+
+  .app-shell > .main-content,
+  .main-content,
+  .workspace,
+  main.workspace {
+    position: relative !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: calc(100dvh - 68px) !important;
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+    touch-action: pan-y !important;
+  }
+
+  .sidebar-menu {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    touch-action: pan-y !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .room-modal-info,
+  .booking-detail-modal,
+  .notification-detail-modal,
+  .room-editor {
+    overscroll-behavior: contain !important;
+    touch-action: pan-y !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .topbar {
+    padding-top: 8px !important;
+  }
+}
+/* MEETPLANNING_IPAD_SCROLL_UNLOCK_20260825_END */
+
 @media (max-width: 760px) {
   .mobile-logo {
     width: 150px !important;
