@@ -3,7 +3,11 @@ import { pool } from '../config/db.js';
 /** Mark checked-in bookings as completed when their reserved time has ended. */
 export async function completeExpiredCheckedInBookings() {
   const [result] = await pool.execute(
-    "UPDATE bookings SET status = 'completed' WHERE status = 'checked_in' AND end_at <= NOW()"
+    `UPDATE bookings
+     SET status = 'completed',
+         completed_at = COALESCE(completed_at, DATE_ADD(UTC_TIMESTAMP(), INTERVAL 7 HOUR))
+     WHERE status = 'checked_in'
+       AND end_at <= DATE_ADD(UTC_TIMESTAMP(), INTERVAL 7 HOUR)`
   );
   return Number(result.affectedRows || 0);
 }

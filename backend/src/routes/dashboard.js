@@ -27,7 +27,8 @@ async function rows(sql, params = [], fallback = []) {
 router.get('/', requireAuth, async (req, res, next) => {
   try {
     const bookableRoomWhere = "(r.status IS NULL OR r.status IN ('active','available','ready','พร้อมใช้'))";
-    const activeBookingWhere = "b.status IN ('approved','checked_in') AND NOW() >= b.start_at AND NOW() < b.end_at";
+    const thailandNow = 'DATE_ADD(UTC_TIMESTAMP(), INTERVAL 7 HOUR)';
+    const activeBookingWhere = `b.status IN ('approved','checked_in') AND ${thailandNow} >= b.start_at AND ${thailandNow} < b.end_at`;
 
     const totalRooms = await scalar(
       "SELECT COUNT(*) AS total FROM rooms r WHERE " + bookableRoomWhere
@@ -42,7 +43,7 @@ router.get('/', requireAuth, async (req, res, next) => {
     );
 
     const todayBookings = await scalar(
-      "SELECT COUNT(*) AS total FROM bookings WHERE DATE(start_at) = CURDATE() AND status NOT IN ('cancelled','rejected')"
+      `SELECT COUNT(*) AS total FROM bookings WHERE DATE(start_at) = DATE(${thailandNow}) AND status NOT IN ('cancelled','rejected')`
     );
 
     const pendingBookings = await scalar(
@@ -57,7 +58,7 @@ router.get('/', requireAuth, async (req, res, next) => {
     const upcoming = await rows(
       "SELECT b.id, b.title, b.status, b.start_at, b.end_at, r.name AS room_name " +
       "FROM bookings b JOIN rooms r ON r.id = b.room_id " +
-      "WHERE b.start_at >= NOW() AND b.status IN ('pending','approved','checked_in') " +
+      `WHERE b.start_at >= ${thailandNow} AND b.status IN ('pending','approved','checked_in') ` +
       "AND (b.user_id = ? OR ? IN ('admin','staff')) " +
       "ORDER BY b.start_at ASC LIMIT 5",
       [req.user.id, req.user.role]

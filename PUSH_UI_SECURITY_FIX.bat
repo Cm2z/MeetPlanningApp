@@ -56,6 +56,7 @@ git add -- ^
   backend/src/routes/auth.js ^
   backend/src/routes/backup.js ^
   backend/src/routes/bookings.js ^
+  backend/src/routes/dashboard.js ^
   backend/src/routes/notifications.js ^
   backend/src/routes/profile.js ^
   backend/src/routes/settings.js ^
