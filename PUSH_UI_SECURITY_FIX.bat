@@ -58,6 +58,7 @@ git add -- ^
   backend/src/utils/bookingLifecycle.js ^
   frontend/package-lock.json ^
   frontend/index.html ^
+  frontend/public/favicon.png ^
   frontend/public/favicon.svg ^
   frontend/src/dialog.js ^
   frontend/src/composables/useMeetPlanning.js ^
