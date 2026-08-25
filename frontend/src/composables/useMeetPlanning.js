@@ -18,6 +18,7 @@ export function useMeetPlanning() {
   const session = ref(null);
   const view = ref(session.value ? 'dashboard' : 'auth');
   const authMode = ref('login');
+  const sessionReady = ref(false);
   const loading = ref(false);
   const toast = ref('');
 
@@ -542,6 +543,10 @@ export function useMeetPlanning() {
     } catch {
       clearSession();
       view.value = 'auth';
+    } finally {
+      // Do not render either the login page or the application until the
+      // server has answered whether the HttpOnly session is still valid.
+      sessionReady.value = true;
     }
     await loadMeta();
     await searchRooms();
@@ -562,6 +567,7 @@ export function useMeetPlanning() {
     session,
     view,
     authMode,
+    sessionReady,
     loading,
     toast,
     rooms,

@@ -75,7 +75,14 @@ onMounted(async () => {
 <template>
   <AppDialog />
   <CookieConsent />
-  <div v-if="!isLoggedIn" class="auth-shell">
+
+  <div v-if="!state.sessionReady.value" class="session-loading" role="status" aria-live="polite">
+    <img src="/meetplanning-logo.webp" width="672" height="224" alt="MeetPlanning" />
+    <span class="session-loading-spinner" aria-hidden="true"></span>
+    <p>กำลังตรวจสอบการเข้าสู่ระบบ...</p>
+  </div>
+
+  <div v-else-if="!isLoggedIn" class="auth-shell">
     <AuthView :state="state" />
     <ToastMessage :message="state.toast.value" />
   </div>
@@ -117,3 +124,44 @@ onMounted(async () => {
     <ToastMessage :message="state.toast.value" />
   </div>
 </template>
+
+<style scoped>
+.session-loading {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  padding: 24px;
+  background: #eef6ff;
+  color: #315373;
+}
+
+.session-loading img {
+  width: min(300px, 72vw);
+  height: auto;
+  padding: 18px 22px;
+  border: 1px solid #d7e5f5;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 14px 38px rgba(20, 60, 105, 0.1);
+}
+
+.session-loading-spinner {
+  width: 34px;
+  height: 34px;
+  border: 4px solid #cfe1f5;
+  border-top-color: #2074cc;
+  border-radius: 50%;
+  animation: session-spin 0.8s linear infinite;
+}
+
+.session-loading p { margin: 0; font-weight: 700; }
+
+@keyframes session-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .session-loading-spinner { animation: none; border-top-color: #cfe1f5; }
+}
+</style>
