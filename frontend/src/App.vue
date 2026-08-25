@@ -5,6 +5,7 @@ import AppSidebar from './components/AppSidebar.vue';
 import AppTopbar from './components/AppTopbar.vue';
 import ToastMessage from './components/ToastMessage.vue';
 import AppDialog from './components/AppDialog.vue';
+import CookieConsent from './components/CookieConsent.vue';
 import AuthView from './views/AuthView.vue';
 import BackupView from './views/BackupView.vue';
 import BookingsView from './views/BookingsView.vue';
@@ -73,6 +74,7 @@ onMounted(async () => {
 
 <template>
   <AppDialog />
+  <CookieConsent />
   <div v-if="!isLoggedIn" class="auth-shell">
     <AuthView :state="state" />
     <ToastMessage :message="state.toast.value" />

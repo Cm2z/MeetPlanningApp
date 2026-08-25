@@ -70,6 +70,7 @@ git add -- ^
   frontend/public/robots.txt ^
   frontend/src/api.js ^
   frontend/src/components/AppSidebar.vue ^
+  frontend/src/components/CookieConsent.vue ^
   frontend/src/dialog.js ^
   frontend/src/composables/useMeetPlanning.js ^
   frontend/src/components/AppDialog.vue ^
