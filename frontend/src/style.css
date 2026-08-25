@@ -4586,9 +4586,9 @@ button.primary:hover {
   background: linear-gradient(90deg, #0f6fdb, #40a3ff);
 }
 
-.app-dialog-card.danger::before { background: linear-gradient(90deg, #c93434, #ff6b6b); }
-.app-dialog-card.warning::before { background: linear-gradient(90deg, #d17a00, #ffb020); }
-.app-dialog-card.success::before { background: linear-gradient(90deg, #07845f, #22c98b); }
+.app-dialog-card.is-danger::before { background: linear-gradient(90deg, #c93434, #ff6b6b); }
+.app-dialog-card.is-warning::before { background: linear-gradient(90deg, #d17a00, #ffb020); }
+.app-dialog-card.is-success::before { background: linear-gradient(90deg, #07845f, #22c98b); }
 
 .app-dialog-icon {
   width: 54px;
@@ -4600,9 +4600,9 @@ button.primary:hover {
   color: #0f6fdb;
 }
 .app-dialog-icon svg { width: 27px; height: 27px; }
-.app-dialog-card.danger .app-dialog-icon { background: #fff0f0; color: #c93434; }
-.app-dialog-card.warning .app-dialog-icon { background: #fff7e7; color: #c56e00; }
-.app-dialog-card.success .app-dialog-icon { background: #e7faf2; color: #07845f; }
+.app-dialog-card.is-danger .app-dialog-icon { background: #fff0f0; color: #c93434; }
+.app-dialog-card.is-warning .app-dialog-icon { background: #fff7e7; color: #c56e00; }
+.app-dialog-card.is-success .app-dialog-icon { background: #e7faf2; color: #07845f; }
 
 .app-dialog-copy { min-width: 0; padding-right: 24px; }
 .app-dialog-eyebrow { margin: 0 0 3px; color: #0f6fdb; font-size: 11px; font-weight: 900; letter-spacing: .13em; }
@@ -4650,9 +4650,9 @@ button.primary:hover {
 }
 .app-dialog-cancel { border: 1px solid #c7d8ea; background: #fff; color: #294866; }
 .app-dialog-confirm { border: 0; background: #176fce; color: #fff; box-shadow: 0 8px 20px rgba(23, 111, 206, .22); }
-.app-dialog-confirm.danger { background: #c93434; box-shadow: 0 8px 20px rgba(201, 52, 52, .22); }
-.app-dialog-confirm.warning { background: #c97800; box-shadow: 0 8px 20px rgba(201, 120, 0, .22); }
-.app-dialog-confirm.success { background: #07845f; box-shadow: 0 8px 20px rgba(7, 132, 95, .22); }
+.app-dialog-confirm.is-danger { background: #c93434; box-shadow: 0 8px 20px rgba(201, 52, 52, .22); }
+.app-dialog-confirm.is-warning { background: #c97800; box-shadow: 0 8px 20px rgba(201, 120, 0, .22); }
+.app-dialog-confirm.is-success { background: #07845f; box-shadow: 0 8px 20px rgba(7, 132, 95, .22); }
 .app-dialog-actions button:hover { transform: translateY(-1px); filter: brightness(.98); }
 .app-dialog-actions button:focus-visible,
 .app-dialog-close:focus-visible { outline: 3px solid rgba(34, 121, 220, .32); outline-offset: 2px; }
