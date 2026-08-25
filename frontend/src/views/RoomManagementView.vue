@@ -1,6 +1,6 @@
 <script setup>
 import { appConfirm, appPrompt } from '../dialog.js';
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { api } from '../api.js';
 import { Building2, ImagePlus, Pencil, Plus, Power, RefreshCw, Save, X } from '@lucide/vue';
 
@@ -14,6 +14,13 @@ const editorOpen = ref(false);
 const editingId = ref(null);
 const selectedEquipment = ref([]);
 const additionalImages = ref('');
+const query = ref('');
+const statusFilter = ref('all');
+const branchFilter = ref('all');
+const buildingFilter = ref('all');
+const sortBy = ref('name');
+const page = ref(1);
+const pageSize = 12;
 
 function freshForm() {
   return {
@@ -25,6 +32,41 @@ function freshForm() {
 const form = reactive(freshForm());
 const isEditing = computed(() => Boolean(editingId.value));
 const activeRooms = computed(() => rooms.value.filter((room) => room.status === 'available').length);
+const maintenanceRooms = computed(() => rooms.value.filter((room) => room.status === 'maintenance').length);
+const disabledRooms = computed(() => rooms.value.filter((room) => room.status === 'disabled').length);
+const buildings = computed(() => [...new Set(rooms.value.map((room) => room.building).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'th')));
+const filteredRooms = computed(() => {
+  const keyword = query.value.trim().toLowerCase();
+  const rows = rooms.value.filter((room) => {
+    const text = [room.name, room.code, room.branch_name, room.building, room.floor, room.description]
+      .map((value) => String(value || '').toLowerCase()).join(' ');
+    return (!keyword || text.includes(keyword))
+      && (statusFilter.value === 'all' || room.status === statusFilter.value)
+      && (branchFilter.value === 'all' || String(room.branch_id) === String(branchFilter.value))
+      && (buildingFilter.value === 'all' || room.building === buildingFilter.value);
+  });
+  return [...rows].sort((a, b) => {
+    if (sortBy.value === 'capacity_desc') return Number(b.capacity) - Number(a.capacity);
+    if (sortBy.value === 'capacity_asc') return Number(a.capacity) - Number(b.capacity);
+    if (sortBy.value === 'building') return String(a.building || '').localeCompare(String(b.building || ''), 'th') || String(a.name).localeCompare(String(b.name), 'th');
+    return String(a.name || '').localeCompare(String(b.name || ''), 'th');
+  });
+});
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredRooms.value.length / pageSize)));
+const pagedRooms = computed(() => filteredRooms.value.slice((page.value - 1) * pageSize, page.value * pageSize));
+const resultStart = computed(() => filteredRooms.value.length ? (page.value - 1) * pageSize + 1 : 0);
+const resultEnd = computed(() => Math.min(page.value * pageSize, filteredRooms.value.length));
+
+watch([query, statusFilter, branchFilter, buildingFilter, sortBy], () => { page.value = 1; });
+watch(totalPages, (value) => { if (page.value > value) page.value = value; });
+
+function clearFilters() {
+  query.value = '';
+  statusFilter.value = 'all';
+  branchFilter.value = 'all';
+  buildingFilter.value = 'all';
+  sortBy.value = 'name';
+}
 
 function statusText(status) {
   return ({ available: 'พร้อมใช้งาน', maintenance: 'ปรับปรุง', disabled: 'ปิดใช้งาน' })[status] || status;
@@ -173,13 +215,30 @@ onMounted(loadData);
       </div>
     </header>
 
+    <section class="room-admin-metrics" aria-label="สรุปสถานะห้องประชุม">
+      <button :class="{ active: statusFilter === 'all' }" type="button" @click="statusFilter = 'all'"><span>ทั้งหมด</span><strong>{{ rooms.length }}</strong></button>
+      <button class="available" :class="{ active: statusFilter === 'available' }" type="button" @click="statusFilter = 'available'"><span>พร้อมใช้งาน</span><strong>{{ activeRooms }}</strong></button>
+      <button class="maintenance" :class="{ active: statusFilter === 'maintenance' }" type="button" @click="statusFilter = 'maintenance'"><span>ปรับปรุง</span><strong>{{ maintenanceRooms }}</strong></button>
+      <button class="disabled" :class="{ active: statusFilter === 'disabled' }" type="button" @click="statusFilter = 'disabled'"><span>ปิดใช้งาน</span><strong>{{ disabledRooms }}</strong></button>
+    </section>
+
+    <section class="room-admin-toolbar panel" aria-label="ค้นหาและกรองห้องประชุม">
+      <label class="room-search-field">ค้นหาห้อง<input v-model="query" type="search" placeholder="ชื่อ รหัสห้อง อาคาร ชั้น หรือรายละเอียด" /></label>
+      <label>สาขา<select v-model="branchFilter"><option value="all">ทุกสาขา</option><option v-for="branch in meta.branches" :key="branch.id" :value="String(branch.id)">{{ branch.name }}</option></select></label>
+      <label>อาคาร<select v-model="buildingFilter"><option value="all">ทุกอาคาร</option><option v-for="building in buildings" :key="building" :value="building">{{ building }}</option></select></label>
+      <label>เรียงลำดับ<select v-model="sortBy"><option value="name">ชื่อห้อง ก–ฮ</option><option value="building">อาคาร</option><option value="capacity_desc">ความจุมากสุด</option><option value="capacity_asc">ความจุน้อยสุด</option></select></label>
+      <button class="ghost compact" type="button" @click="clearFilters">ล้างตัวกรอง</button>
+    </section>
+
     <div v-if="loading" class="room-admin-loading">กำลังโหลดข้อมูลห้องประชุม...</div>
     <div v-else-if="!rooms.length" class="room-admin-empty panel">
       <Building2 /><h3>ยังไม่มีห้องประชุม</h3><p>เริ่มต้นเพิ่มห้องแรกเพื่อให้ผู้ใช้ค้นหาและส่งคำขอจองได้</p>
       <button class="primary" type="button" @click="openCreate">เพิ่มห้องประชุม</button>
     </div>
-    <div v-else class="room-admin-grid">
-      <article v-for="room in rooms" :key="room.id" class="room-admin-card" :class="room.status">
+    <div v-else-if="filteredRooms.length" class="room-admin-results">
+      <div class="room-admin-results-head"><div><strong>รายการห้องประชุม</strong><span>พบ {{ filteredRooms.length }} ห้อง</span></div><small>แสดง {{ resultStart }}–{{ resultEnd }} จาก {{ filteredRooms.length }}</small></div>
+      <div class="room-admin-grid">
+      <article v-for="room in pagedRooms" :key="room.id" class="room-admin-card" :class="room.status">
         <img v-if="room.image_url || room.imageUrl" :src="room.image_url || room.imageUrl" :alt="room.name" />
         <div v-else class="room-admin-placeholder"><Building2 /></div>
         <div class="room-admin-card-body">
@@ -196,7 +255,14 @@ onMounted(loadData);
           </div>
         </div>
       </article>
+      </div>
+      <nav v-if="totalPages > 1" class="room-pagination" aria-label="เปลี่ยนหน้ารายการห้อง">
+        <button class="ghost compact" type="button" :disabled="page <= 1" @click="page--">ก่อนหน้า</button>
+        <span>หน้า {{ page }} จาก {{ totalPages }}</span>
+        <button class="ghost compact" type="button" :disabled="page >= totalPages" @click="page++">ถัดไป</button>
+      </nav>
     </div>
+    <div v-else-if="rooms.length" class="room-admin-empty panel"><Building2 /><h3>ไม่พบห้องที่ค้นหา</h3><p>ลองเปลี่ยนคำค้นหาหรือล้างตัวกรอง</p><button class="ghost" type="button" @click="clearFilters">ล้างตัวกรอง</button></div>
 
     <div v-if="editorOpen" class="room-editor-backdrop" @click.self="editorOpen = false">
       <form class="room-editor" @submit.prevent="saveRoom">
@@ -239,6 +305,13 @@ https://..."></textarea></label></div>
 .eyebrow { margin: 0 0 5px; color: #176ac4; font-weight: 800; font-size: 13px; }
 .room-admin-summary { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .room-admin-summary strong { color: #176ac4; font-size: 26px; }.room-admin-summary > span { color: #64748b; margin-right: 8px; }
+.room-admin-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.room-admin-metrics button { min-height: 84px; display: grid; align-content: center; gap: 4px; padding: 14px 16px; text-align: left; border: 1px solid #cadcf2; border-radius: 12px; background: #fff; color: #65758c; }
+.room-admin-metrics button strong { color: #176ac4; font-size: 27px; line-height: 1; }.room-admin-metrics button.active { border-color: #2279dc; box-shadow: 0 0 0 2px rgba(34,121,220,.1); }.room-admin-metrics button.available strong { color: #087b4d; }.room-admin-metrics button.maintenance strong { color: #aa6500; }.room-admin-metrics button.disabled strong { color: #65758c; }
+.room-admin-toolbar { position: sticky; top: 10px; z-index: 8; display: grid; grid-template-columns: minmax(260px, 1.6fr) repeat(3, minmax(150px, .7fr)) auto; gap: 10px; align-items: end; padding: 15px; box-shadow: 0 8px 24px rgba(17,54,91,.07); }
+.room-admin-toolbar label { display: grid; gap: 5px; color: #345474; font-size: 12px; font-weight: 800; }.room-admin-toolbar input,.room-admin-toolbar select { min-height: 44px; border: 1px solid #c3d7ed; border-radius: 9px; padding: 8px 10px; background: #fff; color: #183a60; }
+.room-admin-results { overflow: hidden; border: 1px solid #cadcf2; border-radius: 13px; background: #fff; }.room-admin-results-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid #dce7f3; }.room-admin-results-head > div { display: flex; align-items: baseline; gap: 9px; }.room-admin-results-head strong { color: #102b4d; font-size: 18px; }.room-admin-results-head span,.room-admin-results-head small { color: #6b7c91; }
+.room-admin-results .room-admin-grid { padding: 15px; }.room-pagination { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 14px 18px; border-top: 1px solid #dce7f3; color: #526b87; font-weight: 800; }.room-pagination button:disabled { opacity: .45; cursor: not-allowed; }
 .icon-text { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }.icon-text svg { width: 16px; height: 16px; }
 .room-admin-loading, .room-admin-empty { min-height: 200px; display: grid; place-items: center; align-content: center; text-align: center; gap: 8px; color: #62748d; }.room-admin-empty svg { width: 36px; height: 36px; color: #176ac4; }.room-admin-empty h3 { margin: 0; color: #102b4d; }
 .room-admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 15px; }
@@ -247,5 +320,6 @@ https://..."></textarea></label></div>
 .room-admin-card-body { padding: 15px; display: flex; flex-direction: column; gap: 9px; min-width: 0; }.room-admin-card-title { display: flex; justify-content: space-between; gap: 8px; }.room-admin-card-title p, .room-admin-description { margin: 4px 0 0; color: #64748b; font-size: 13px; }.room-admin-description { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .room-status, .room-admin-facts span { border-radius: 999px; padding: 4px 8px; font-size: 12px; font-weight: 700; white-space: nowrap; }.room-status.available { background: #e1f8ed; color: #087b4d; }.room-status.maintenance { background: #fff0cf; color: #a15d00; }.room-status.disabled { background: #f2f4f8; color: #5f6d80; }.room-admin-facts { display: flex; gap: 6px; flex-wrap: wrap; }.room-admin-facts span { background: #edf5ff; color: #176ac4; }.room-admin-actions { margin-top: auto; display: flex; gap: 8px; flex-wrap: wrap; }
 .room-editor-backdrop { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; background: rgba(15, 32, 55, .52); padding: 20px; }.room-editor { width: min(820px, 100%); max-height: min(88vh, 860px); display: flex; flex-direction: column; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 22px 60px rgba(7, 31, 59, .32); }.room-editor > header, .room-editor > footer { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; border-bottom: 1px solid #dbe7f6; }.room-editor > footer { border-top: 1px solid #dbe7f6; border-bottom: 0; gap: 10px; justify-content: flex-end; }.room-editor-content { overflow: auto; padding: 20px 22px; display: grid; gap: 20px; }.room-editor-content section h3 { margin: 0 0 10px; color: #19385d; font-size: 16px; display: flex; gap: 7px; align-items: center; }.room-editor-content section h3 svg { width: 18px; color: #176ac4; }.room-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }.room-form-grid label { display: grid; gap: 6px; color: #35516f; font-size: 13px; font-weight: 700; }.room-form-grid .full { grid-column: 1 / -1; }.room-form-grid input, .room-form-grid select, .room-form-grid textarea { width: 100%; border: 1px solid #bcd4ef; border-radius: 8px; padding: 10px 11px; font: inherit; color: #172e4d; background: #fff; box-sizing: border-box; }.room-form-grid textarea { resize: vertical; }.equipment-checks { display: flex; flex-wrap: wrap; gap: 8px; }.equipment-checks label { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; background: #f4f8fd; border: 1px solid #d5e4f5; border-radius: 8px; cursor: pointer; color: #3c5877; }.equipment-checks label.checked { background: #e5f2ff; border-color: #4c9be7; color: #125ba4; }.equipment-checks input { accent-color: #176ac4; }
-@media (max-width: 720px) { .room-admin-header { align-items: flex-start; flex-direction: column; padding: 17px; }.room-admin-summary { justify-content: flex-start; }.room-admin-card { grid-template-columns: 108px 1fr; min-height: 165px; }.room-admin-card > img, .room-admin-placeholder { min-height: 165px; }.room-editor-backdrop { align-items: end; padding: 0; }.room-editor { width: 100%; max-height: 92vh; border-radius: 18px 18px 0 0; }.room-editor > header, .room-editor > footer { padding: 15px 16px; }.room-editor-content { padding: 16px; }.room-form-grid { grid-template-columns: 1fr; }.room-form-grid .full { grid-column: auto; } }
+@media (max-width: 1100px) { .room-admin-toolbar { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); }.room-search-field { grid-column: 1 / -1; }.room-admin-toolbar > button { min-height: 44px; } }
+@media (max-width: 720px) { .room-admin-header { align-items: flex-start; flex-direction: column; padding: 17px; }.room-admin-summary { justify-content: flex-start; }.room-admin-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }.room-admin-metrics button { min-height: 72px; }.room-admin-toolbar { grid-template-columns: 1fr; }.room-search-field { grid-column: auto; }.room-admin-results-head { align-items: flex-start; flex-direction: column; }.room-admin-card { grid-template-columns: 108px 1fr; min-height: 165px; }.room-admin-card > img, .room-admin-placeholder { min-height: 165px; }.room-editor-backdrop { align-items: end; padding: 0; }.room-editor { width: 100%; max-height: 92vh; border-radius: 18px 18px 0 0; }.room-editor > header, .room-editor > footer { padding: 15px 16px; }.room-editor-content { padding: 16px; }.room-form-grid { grid-template-columns: 1fr; }.room-form-grid .full { grid-column: auto; } }
 </style>
