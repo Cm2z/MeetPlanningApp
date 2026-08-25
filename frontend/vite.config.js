@@ -10,16 +10,29 @@ const securityHeaders = {
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
 };
 
+const productionApiTarget = process.env.API_PROXY_TARGET
+  || 'https://meetplanningapp-production.up.railway.app';
+
+const apiProxy = (target) => ({
+  '/api': {
+    target,
+    changeOrigin: true,
+    secure: true,
+  },
+});
+
 export default defineConfig({
   plugins: [vue()],
   server: {
     host: '0.0.0.0',
     allowedHosts: true,
     headers: securityHeaders,
+    proxy: apiProxy(process.env.API_PROXY_TARGET || 'http://localhost:4000'),
   },
   preview: {
     host: '0.0.0.0',
     allowedHosts: true,
     headers: securityHeaders,
+    proxy: apiProxy(productionApiTarget),
   }
 });

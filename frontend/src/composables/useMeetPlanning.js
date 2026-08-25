@@ -2,6 +2,7 @@
 import { computed, reactive, ref } from 'vue';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+const REQUEST_API_URL = import.meta.env.PROD ? '/api' : API_URL;
 
 function today() {
   const now = new Date();
@@ -75,7 +76,7 @@ export function useMeetPlanning() {
 
   async function api(path, options = {}) {
     const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-    const response = await fetch(API_URL + path, { ...options, headers, credentials: 'include' });
+    const response = await fetch(REQUEST_API_URL + path, { ...options, headers, credentials: 'include' });
     const text = await response.text();
     const data = text ? JSON.parse(text) : {};
     if (!response.ok) {
