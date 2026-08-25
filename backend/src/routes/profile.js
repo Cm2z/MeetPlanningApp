@@ -38,6 +38,9 @@ router.patch('/', requireAuth, async (req, res, next) => {
     const department = String(req.body.department || '').trim();
     const phone = String(req.body.phone || '').trim();
     if (!name) return res.status(422).json({ message: 'กรุณากรอกชื่อ-นามสกุล' });
+    if (name.length > 120 || department.length > 120 || phone.length > 40) {
+      return res.status(422).json({ message: 'ข้อมูลโปรไฟล์ยาวเกินกำหนด' });
+    }
 
     await pool.execute(
       'UPDATE users SET name = ?, department = ?, phone = ? WHERE id = ?',
@@ -57,18 +60,15 @@ router.patch('/password', requireAuth, async (req, res, next) => {
   try {
     const currentPassword = String(req.body.currentPassword || '');
     const newPassword = String(req.body.newPassword || '');
-    if (!currentPassword || newPassword.length < 6) {
-      return res.status(422).json({ message: 'รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร' });
+    if (!currentPassword || newPassword.length < 8 || newPassword.length > 128) {
+      return res.status(422).json({ message: 'รหัสผ่านใหม่ต้องมี 8–128 ตัวอักษร' });
     }
 
     const [[user]] = await pool.execute('SELECT password_hash FROM users WHERE id = ? LIMIT 1', [req.user.id]);
-    const passwordOk = user && (
-      user.password_hash === currentPassword ||
-      await bcrypt.compare(currentPassword, user.password_hash).catch(() => false)
-    );
+    const passwordOk = user && await bcrypt.compare(currentPassword, user.password_hash).catch(() => false);
     if (!passwordOk) return res.status(401).json({ message: 'รหัสผ่านปัจจุบันไม่ถูกต้อง' });
 
-    const passwordHash = await bcrypt.hash(newPassword, 10);
+    const passwordHash = await bcrypt.hash(newPassword, 12);
     await pool.execute('UPDATE users SET password_hash = ? WHERE id = ?', [passwordHash, req.user.id]);
     res.json({ ok: true });
   } catch (error) {

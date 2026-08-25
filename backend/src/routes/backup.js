@@ -1,6 +1,6 @@
 
 import { Router } from 'express';
-import { pool } from '../config/db.js';
+import { createRestoreConnection, pool } from '../config/db.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { audit } from '../utils/activity.js';
 
@@ -43,7 +43,12 @@ router.post('/restore', async (req, res, next) => {
       return res.status(403).json({ message: 'Database restore is disabled' });
     }
     if (!req.body.sql || !String(req.body.sql).includes('meetplanning')) return res.status(422).json({ message: 'Invalid SQL backup' });
-    await pool.query(req.body.sql);
+    const connection = await createRestoreConnection();
+    try {
+      await connection.query(req.body.sql);
+    } finally {
+      await connection.end();
+    }
     await audit(req.user.id, 'restore_database', 'database', null, {});
     res.json({ message: 'Restore completed' });
   } catch (error) { next(error); }

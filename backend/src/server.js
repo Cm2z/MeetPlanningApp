@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import { pingDatabase } from './config/db.js';
 import { registerRoutes } from './routes/index.js';
 import { startBookingLifecycleWorker } from './utils/bookingLifecycle.js';
+import { migrateLegacyPlaintextPasswords } from './utils/passwordMigration.js';
 
 dotenv.config();
 
@@ -46,7 +47,9 @@ app.use(cors({
     const isAllowed = allowedOrigins.includes(cleanOrigin);
 
     if (isAllowed) return callback(null, true);
-    return callback(new Error('Not allowed by CORS'));
+    const error = new Error('Origin is not allowed by CORS');
+    error.status = 403;
+    return callback(error);
   },
   credentials: true
 }));
@@ -66,7 +69,8 @@ app.use((error, _req, res, _next) => {
   res.status(status).json({ message });
 });
 
-pingDatabase().then(() => {
+pingDatabase().then(async () => {
+  await migrateLegacyPlaintextPasswords();
   startBookingLifecycleWorker();
   app.listen(port, () => console.log('MeetPlanning API running on http://localhost:' + port));
 }).catch((error) => {

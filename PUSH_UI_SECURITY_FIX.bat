@@ -36,6 +36,9 @@ node --check src/routes/auth.js || goto :backend_failed
 node --check src/routes/backup.js || goto :backend_failed
 node --check src/routes/bookings.js || goto :backend_failed
 node --check src/routes/notifications.js || goto :backend_failed
+node --check src/routes/profile.js || goto :backend_failed
+node --check src/routes/settings.js || goto :backend_failed
+node --check src/utils/passwordMigration.js || goto :backend_failed
 
 echo.
 echo [4/6] Auditing backend production dependencies...
@@ -54,22 +57,33 @@ git add -- ^
   backend/src/routes/backup.js ^
   backend/src/routes/bookings.js ^
   backend/src/routes/notifications.js ^
+  backend/src/routes/profile.js ^
+  backend/src/routes/settings.js ^
   backend/src/server.js ^
   backend/src/utils/bookingLifecycle.js ^
+  backend/src/utils/passwordMigration.js ^
+  docker-compose.yml ^
   frontend/package-lock.json ^
   frontend/index.html ^
   frontend/public/favicon.png ^
-  frontend/public/favicon.svg ^
+  frontend/public/meetplanning-logo.webp ^
+  frontend/public/robots.txt ^
+  frontend/src/api.js ^
+  frontend/src/components/AppSidebar.vue ^
   frontend/src/dialog.js ^
   frontend/src/composables/useMeetPlanning.js ^
   frontend/src/components/AppDialog.vue ^
   frontend/src/style.css ^
   frontend/src/App.vue ^
   frontend/src/views/AuthView.vue ^
+  frontend/src/views/BackupView.vue ^
   frontend/src/views/BookingsView.vue ^
   frontend/src/views/ReserveView.vue ^
   frontend/src/views/RoomManagementView.vue ^
+  frontend/src/views/ProfileView.vue ^
+  frontend/src/views/SettingsView.vue ^
   frontend/src/views/UserManagementView.vue ^
+  frontend/vite.config.js ^
   PUSH_UI_SECURITY_FIX.bat
 if errorlevel 1 goto :git_add_failed
 

@@ -28,7 +28,7 @@ defineProps({ state: Object });
       <form class="panel form" @submit.prevent="state.changePassword()">
         <h3>เปลี่ยนรหัสผ่าน</h3>
         <label>รหัสผ่านปัจจุบัน<input v-model="state.passwordForm.currentPassword" type="password" /></label>
-        <label>รหัสผ่านใหม่<input v-model="state.passwordForm.newPassword" type="password" minlength="6" /></label>
+        <label>รหัสผ่านใหม่<input v-model="state.passwordForm.newPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password" /></label>
         <button class="primary large-button">เปลี่ยนรหัสผ่าน</button>
       </form>
     </div>

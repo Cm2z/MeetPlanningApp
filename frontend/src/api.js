@@ -1,16 +1,16 @@
 ﻿const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
 export function getSession() {
-  const raw = localStorage.getItem('meetplanning_session');
-  return raw ? JSON.parse(raw) : null;
+  return null;
 }
-export function saveSession(session) { localStorage.setItem('meetplanning_session', JSON.stringify(session)); }
-export function clearSession() { localStorage.removeItem('meetplanning_session'); }
+export function saveSession(_session) {}
+export function clearSession() {}
 export async function api(path, options = {}) {
   const session = getSession();
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
-    headers: { 'Content-Type': 'application/json', ...(session?.token ? { Authorization: `Bearer ${session.token}` } : {}), ...(options.headers || {}) }
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.message || 'เกิดข้อผิดพลาด');

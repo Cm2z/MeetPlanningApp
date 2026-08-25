@@ -2,7 +2,6 @@
 import { computed, reactive, ref } from 'vue';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-const STORAGE_KEY = 'meetplanning_session';
 
 function today() {
   const now = new Date();
@@ -12,16 +11,10 @@ function today() {
   return `${year}-${month}-${day}`;
 }
 
-function readStoredSession() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-  } catch {
-    return null;
-  }
-}
-
 export function useMeetPlanning() {
-  const session = ref(readStoredSession());
+  // Remove JWT data created by older releases; authentication now uses an HttpOnly cookie.
+  try { localStorage.removeItem('meetplanning_session'); } catch { /* Storage may be unavailable in privacy mode. */ }
+  const session = ref(null);
   const view = ref(session.value ? 'dashboard' : 'auth');
   const authMode = ref('login');
   const loading = ref(false);
@@ -82,8 +75,7 @@ export function useMeetPlanning() {
 
   async function api(path, options = {}) {
     const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-    if (session.value?.token) headers.Authorization = 'Bearer ' + session.value.token;
-    const response = await fetch(API_URL + path, { ...options, headers });
+    const response = await fetch(API_URL + path, { ...options, headers, credentials: 'include' });
     const text = await response.text();
     const data = text ? JSON.parse(text) : {};
     if (!response.ok) {
@@ -103,12 +95,10 @@ export function useMeetPlanning() {
       savedAt: Date.now(),
       expiresAt: null,
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionData));
     session.value = sessionData;
   }
 
   function clearSession() {
-    localStorage.removeItem(STORAGE_KEY);
     session.value = null;
   }
 
@@ -154,7 +144,7 @@ export function useMeetPlanning() {
 
   async function loadDashboard() {
     const emptyDashboard = { roomsReady: 0, todayBookings: 0, unread: 0, upcoming: [] };
-    if (!session.value?.token) {
+    if (!session.value) {
       dashboard.value = emptyDashboard;
       return;
     }
@@ -369,7 +359,8 @@ export function useMeetPlanning() {
     }
   }
 
-  function logout() {
+  async function logout() {
+    try { await api('/auth/logout', { method: 'POST' }); } catch { /* Clear local state even if the network is unavailable. */ }
     clearSession();
     view.value = 'auth';
     authMode.value = 'login';
@@ -544,9 +535,16 @@ export function useMeetPlanning() {
   }
 
   async function boot() {
+    try {
+      saveSession(await api('/auth/session'));
+      view.value = 'dashboard';
+    } catch {
+      clearSession();
+      view.value = 'auth';
+    }
     await loadMeta();
     await searchRooms();
-    if (session.value?.token) {
+    if (session.value) {
       await loadDashboard();
       await Promise.all([
         loadProfile(),

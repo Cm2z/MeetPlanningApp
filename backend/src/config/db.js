@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-export const pool = mysql.createPool({
+const databaseConfig = {
   host: process.env.DB_HOST || process.env.MYSQLHOST || 'localhost',
   port: Number(process.env.DB_PORT || process.env.MYSQLPORT || 3306),
   user: process.env.DB_USER || process.env.MYSQLUSER || 'root',
@@ -13,12 +13,18 @@ export const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   namedPlaceholders: true,
-  multipleStatements: true,
+  multipleStatements: false,
   charset: 'utf8mb4',
   // Bookings use Thailand wall-clock time. This keeps MySQL DATETIME values
   // aligned with the time selected in the browser instead of Railway's UTC.
   timezone: '+07:00'
-});
+};
+
+export const pool = mysql.createPool(databaseConfig);
+
+export function createRestoreConnection() {
+  return mysql.createConnection({ ...databaseConfig, multipleStatements: true });
+}
 
 export async function pingDatabase() {
   const connection = await pool.getConnection();

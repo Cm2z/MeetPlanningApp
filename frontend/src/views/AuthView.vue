@@ -11,7 +11,8 @@ defineProps({
   <main class="mp-auth-page">
     <section class="mp-auth-showcase" aria-label="แนะนำระบบ MeetPlanning">
       <header class="mp-auth-brand">
-        <img class="mp-auth-logo" src="/meetplanning-logo.png" alt="MeetPlanning ระบบจัดการห้องประชุม" />
+        <img class="mp-auth-logo" src="/meetplanning-logo.webp" width="672" height="224"
+          alt="MeetPlanning ระบบจัดการห้องประชุม" fetchpriority="high" />
       </header>
 
       <div class="mp-auth-copy">
@@ -59,12 +60,12 @@ defineProps({
             : 'กรอกข้อมูลสำหรับสร้างบัญชีเพื่อจองห้องประชุม' }}
         </p>
 
-        <div class="mp-auth-tabs" role="tablist" aria-label="เลือกวิธีเข้าใช้งาน">
+        <div class="mp-auth-tabs" aria-label="เลือกวิธีเข้าใช้งาน">
           <button type="button" :class="{ active: state.authMode.value === 'login' }"
-            :aria-selected="state.authMode.value === 'login'"
+            :aria-pressed="state.authMode.value === 'login'"
             @click="state.authMode.value = 'login'">เข้าสู่ระบบ</button>
           <button type="button" :class="{ active: state.authMode.value === 'register' }"
-            :aria-selected="state.authMode.value === 'register'"
+            :aria-pressed="state.authMode.value === 'register'"
             @click="state.authMode.value = 'register'">สมัครสมาชิก</button>
         </div>
 
@@ -97,7 +98,7 @@ defineProps({
           <label class="mp-auth-field">
             <span>รหัสผ่าน</span>
             <input v-model="state.registerForm.password" type="password" autocomplete="new-password" minlength="8" maxlength="128"
-              placeholder="อย่างน้อย 6 ตัวอักษร" required />
+              placeholder="อย่างน้อย 8 ตัวอักษร" required />
           </label>
           <label class="mp-auth-field">
             <span>แผนก <small>ไม่บังคับ</small></span>
@@ -162,6 +163,10 @@ defineProps({
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0;
+}
+
+.mp-auth-overline {
+  color: #2168b8;
 }
 
 .mp-auth-copy h1 {
@@ -289,7 +294,7 @@ defineProps({
 
 .mp-auth-description {
   margin: 10px 0 24px;
-  color: #657b98;
+  color: #536d8b;
   font-size: 14px;
   line-height: 1.65;
 }
@@ -390,7 +395,7 @@ defineProps({
 .mp-auth-switch {
   margin: 2px 0 0;
   text-align: center;
-  color: #6d829c;
+  color: #566f8c;
   font-size: 13px;
 }
 

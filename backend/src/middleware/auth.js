@@ -1,5 +1,7 @@
 ﻿import jwt from 'jsonwebtoken';
 
+export const AUTH_COOKIE = 'meetplanning_session';
+
 function jwtSecret() {
   const secret = process.env.JWT_SECRET;
   if (process.env.NODE_ENV === 'production' && (!secret || secret.length < 32 || secret.includes('change-this'))) {
@@ -10,7 +12,15 @@ function jwtSecret() {
 
 export function requireAuth(req, res, next) {
   const header = req.headers.authorization || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  const cookieHeader = req.headers.cookie || '';
+  const cookieToken = cookieHeader
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(AUTH_COOKIE + '='))
+    ?.slice(AUTH_COOKIE.length + 1);
+  const token = header.startsWith('Bearer ')
+    ? header.slice(7)
+    : (cookieToken ? decodeURIComponent(cookieToken) : null);
   if (!token) return res.status(401).json({ message: 'กรุณาเข้าสู่ระบบ' });
   try {
     req.user = jwt.verify(token, jwtSecret(), {

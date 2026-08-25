@@ -6,8 +6,8 @@
     environment:
       MYSQL_DATABASE: meetplanning
       MYSQL_USER: meetplanning
-      MYSQL_PASSWORD: meetplanning123
-      MYSQL_ROOT_PASSWORD: root1234
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in your local .env file}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in your local .env file}
     ports:
       - "3306:3306"
     volumes:
