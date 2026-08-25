@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { pingDatabase } from './config/db.js';
 import { registerRoutes } from './routes/index.js';
+import { startBookingLifecycleWorker } from './utils/bookingLifecycle.js';
 
 dotenv.config();
 
@@ -66,6 +67,7 @@ app.use((error, _req, res, _next) => {
 });
 
 pingDatabase().then(() => {
+  startBookingLifecycleWorker();
   app.listen(port, () => console.log('MeetPlanning API running on http://localhost:' + port));
 }).catch((error) => {
   console.error('Cannot connect to MySQL:', error.message);

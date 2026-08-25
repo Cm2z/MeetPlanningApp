@@ -3,6 +3,7 @@ import { body, validationResult } from 'express-validator';
 import { pool } from '../config/db.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { audit, notify } from '../utils/activity.js';
+import { completeExpiredCheckedInBookings } from '../utils/bookingLifecycle.js';
 
 const router = Router();
 const allowedStatuses = ['pending','approved','rejected','cancelled','checked_in','completed','no_show'];
@@ -51,6 +52,7 @@ function toMysqlWallClock(value) {
 
 router.get('/', requireAuth, async (req, res, next) => {
   try {
+    await completeExpiredCheckedInBookings();
     const params = [];
     const whereParts = ['1=1'];
     const canSeeAll = canSeeAllBookings(req.user);

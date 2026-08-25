@@ -55,6 +55,7 @@ git add -- ^
   backend/src/routes/bookings.js ^
   backend/src/routes/notifications.js ^
   backend/src/server.js ^
+  backend/src/utils/bookingLifecycle.js ^
   frontend/package-lock.json ^
   frontend/src/dialog.js ^
   frontend/src/composables/useMeetPlanning.js ^

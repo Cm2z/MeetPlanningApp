@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import BookingDetailModal from '../components/BookingDetailModal.vue';
 import { appConfirm } from '../dialog.js';
 
@@ -12,6 +12,7 @@ const dateFilter = ref('');
 const sortBy = ref('pending_first');
 const page = ref(1);
 const pageSize = 10;
+let refreshTimer = null;
 
 const bookings = computed(() => props.state.bookings.value || []);
 const counts = computed(() => ({
@@ -74,6 +75,12 @@ async function updateStatus(booking, status) {
   if (!await appConfirm(text + 'รายการ “' + booking.title + '” ใช่หรือไม่?', { title: text + 'รายการจอง', confirmText: text, variant })) return;
   await props.state.setStatus(booking, status);
 }
+
+onMounted(() => {
+  refreshTimer = window.setInterval(() => props.state.loadBookings?.(), 60_000);
+});
+
+onBeforeUnmount(() => window.clearInterval(refreshTimer));
 </script>
 
 <template>
