@@ -36,6 +36,19 @@ function hoursBetween(startAt, endAt) {
   return (new Date(endAt).getTime() - new Date(startAt).getTime()) / 3600000;
 }
 
+function toThailandInstant(value) {
+  const text = String(value || '').trim();
+  // Older clients sent a timezone-less value. Treat that value as Thailand
+  // wall-clock time instead of letting the UTC Railway process decide.
+  return new Date(/[zZ]|[+-]\d{2}:?\d{2}$/.test(text) ? text : text + '+07:00');
+}
+
+function toMysqlWallClock(value) {
+  const match = String(value || '').match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(?::(\d{2}))?/);
+  if (!match) return null;
+  return `${match[1]} ${match[2]}:${match[3] || '00'}`;
+}
+
 router.get('/', requireAuth, async (req, res, next) => {
   try {
     const params = [];
@@ -98,8 +111,13 @@ router.post('/', requireAuth, body('roomId').isInt({ min: 1 }), body('title').no
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(422).json({ message: 'กรุณากรอกข้อมูลการจองให้ครบถ้วน' });
     const { roomId, title, purpose = '', attendeeCount, startAt, endAt, requesterPhone = '', note = '', equipment = [] } = req.body;
-    const start = new Date(startAt);
-    const end = new Date(endAt);
+    const start = toThailandInstant(startAt);
+    const end = toThailandInstant(endAt);
+    const dbStartAt = toMysqlWallClock(startAt);
+    const dbEndAt = toMysqlWallClock(endAt);
+    if (!dbStartAt || !dbEndAt || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      return res.status(422).json({ message: 'รูปแบบวันหรือเวลาไม่ถูกต้อง' });
+    }
     if (start >= end) return res.status(422).json({ message: 'เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น' });
     if (start < new Date()) return res.status(422).json({ message: 'ไม่สามารถจองย้อนหลังได้' });
     const rule = await getRule(req.user.role);
@@ -114,9 +132,9 @@ router.post('/', requireAuth, body('roomId').isInt({ min: 1 }), body('title').no
     const room = roomRows[0];
     if (!room || room.status !== 'available') return res.status(422).json({ message: 'ห้องนี้ยังไม่พร้อมใช้งาน' });
     if (Number(attendeeCount) > room.capacity) return res.status(422).json({ message: 'จำนวนผู้เข้าร่วมเกินความจุห้อง' });
-    if (await hasConflict(roomId, startAt, endAt)) return res.status(409).json({ message: 'ช่วงเวลานี้มีการจองแล้ว' });
+    if (await hasConflict(roomId, dbStartAt, dbEndAt)) return res.status(409).json({ message: 'ช่วงเวลานี้มีการจองแล้ว' });
     await connection.beginTransaction();
-    const [result] = await connection.execute('INSERT INTO bookings (room_id, user_id, title, purpose, attendee_count, start_at, end_at, requester_phone, note, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [roomId, req.user.id, title, purpose, attendeeCount, startAt, endAt, requesterPhone, note, 'pending']);
+    const [result] = await connection.execute('INSERT INTO bookings (room_id, user_id, title, purpose, attendee_count, start_at, end_at, requester_phone, note, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [roomId, req.user.id, title, purpose, attendeeCount, dbStartAt, dbEndAt, requesterPhone, note, 'pending']);
     for (const item of equipment) {
       if (item.id && item.quantity) await connection.execute('INSERT INTO booking_equipment (booking_id, equipment_id, quantity) VALUES (?, ?, ?)', [result.insertId, item.id, item.quantity]);
     }

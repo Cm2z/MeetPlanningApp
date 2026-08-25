@@ -14,7 +14,10 @@ export const pool = mysql.createPool({
   connectionLimit: 10,
   namedPlaceholders: true,
   multipleStatements: true,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  // Bookings use Thailand wall-clock time. This keeps MySQL DATETIME values
+  // aligned with the time selected in the browser instead of Railway's UTC.
+  timezone: '+07:00'
 });
 
 export async function pingDatabase() {

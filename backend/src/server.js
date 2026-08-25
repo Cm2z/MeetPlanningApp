@@ -12,7 +12,24 @@ dotenv.config();
 const app = express();
 const port = Number(process.env.PORT || 4000);
 
-app.use(helmet());
+if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32 || process.env.JWT_SECRET.includes('change-this'))) {
+  throw new Error('JWT_SECRET must be a random value of at least 32 characters in production');
+}
+
+app.disable('x-powered-by');
+app.set('trust proxy', 1);
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      baseUri: ["'self'"],
+      frameAncestors: ["'none'"],
+      objectSrc: ["'none'"],
+    },
+  },
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
 const allowedOrigins = [
   process.env.CLIENT_ORIGIN,
   process.env.FRONTEND_URL,
@@ -25,17 +42,15 @@ app.use(cors({
   origin(origin, callback) {
     if (!origin) return callback(null, true);
     const cleanOrigin = origin.replace(/\/$/, '');
-    const isAllowed =
-      allowedOrigins.includes(cleanOrigin) ||
-      /^https:\/\/amiable-gentleness.*\.up\.railway\.app$/.test(cleanOrigin);
+    const isAllowed = allowedOrigins.includes(cleanOrigin);
 
     if (isAllowed) return callback(null, true);
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true
 }));
-app.use(express.json({ limit: '10mb' }));
-app.use(morgan('dev'));
+app.use(express.json({ limit: '1mb', strict: true }));
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 app.get('/health', (_req, res) => res.json({ ok: true, service: 'MeetPlanning API' }));
 registerRoutes(app);
@@ -43,7 +58,11 @@ registerRoutes(app);
 app.use((req, res) => res.status(404).json({ message: 'API route not found' }));
 app.use((error, _req, res, _next) => {
   console.error(error);
-  res.status(error.status || 500).json({ message: error.message || 'Server error' });
+  const status = Number(error.status || 500);
+  const message = status >= 500 && process.env.NODE_ENV === 'production'
+    ? 'เกิดข้อผิดพลาดภายในระบบ'
+    : (error.message || 'Server error');
+  res.status(status).json({ message });
 });
 
 pingDatabase().then(() => {

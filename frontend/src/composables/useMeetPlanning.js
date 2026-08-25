@@ -5,7 +5,11 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 const STORAGE_KEY = 'meetplanning_session';
 
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function readStoredSession() {
@@ -114,7 +118,9 @@ export function useMeetPlanning() {
   }
 
   function toDateTime(date, time) {
-    return date + 'T' + time + ':00';
+    // Booking inputs are wall-clock times in Thailand. Sending an explicit
+    // offset prevents Railway (UTC) from interpreting 09:00 as 09:00 UTC.
+    return date + 'T' + time + ':00+07:00';
   }
 
   function requireLogin() {

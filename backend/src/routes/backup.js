@@ -39,6 +39,9 @@ router.get('/download', async (req, res, next) => {
 
 router.post('/restore', async (req, res, next) => {
   try {
+    if (process.env.ALLOW_DATABASE_RESTORE !== 'true') {
+      return res.status(403).json({ message: 'Database restore is disabled' });
+    }
     if (!req.body.sql || !String(req.body.sql).includes('meetplanning')) return res.status(422).json({ message: 'Invalid SQL backup' });
     await pool.query(req.body.sql);
     await audit(req.user.id, 'restore_database', 'database', null, {});

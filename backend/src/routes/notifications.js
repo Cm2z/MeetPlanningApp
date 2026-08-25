@@ -3,7 +3,7 @@ import { pool } from '../config/db.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 
 const router = Router();
-const ADMIN_DELETE_CODE = process.env.ADMIN_DELETE_CODE || '1234';
+const ADMIN_DELETE_CODE = process.env.ADMIN_DELETE_CODE || '';
 
 function toInt(value, fallback, min, max) {
   const parsed = Number.parseInt(value, 10);
@@ -35,7 +35,7 @@ function assertAdminDelete(req) {
     error.status = 403;
     throw error;
   }
-  if (String(req.body?.deleteCode || '') !== ADMIN_DELETE_CODE) {
+  if (!ADMIN_DELETE_CODE || String(req.body?.deleteCode || '') !== ADMIN_DELETE_CODE) {
     const error = new Error('รหัสยืนยันการลบไม่ถูกต้อง');
     error.status = 403;
     throw error;

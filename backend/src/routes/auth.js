@@ -16,9 +16,13 @@ function signUser(user) {
     department: user.department || '',
     phone: user.phone || '',
   };
-  const secret = process.env.JWT_SECRET || 'dev-secret';
-  const token = jwt.sign(safeUser, secret);
-  return { token, user: safeUser, expiresInSeconds: null };
+  const secret = process.env.JWT_SECRET || 'development-only-secret-change-me';
+  const expiresInSeconds = 8 * 60 * 60;
+  const token = jwt.sign(safeUser, secret, {
+    algorithm: 'HS256', expiresIn: expiresInSeconds,
+    issuer: 'meetplanning-api', audience: 'meetplanning-web',
+  });
+  return { token, user: safeUser, expiresInSeconds };
 }
 
 async function ensureLoginAttemptsTable() {
@@ -48,25 +52,27 @@ router.post('/login',
       const [rows] = await pool.execute('SELECT * FROM users WHERE email = ? LIMIT 1', [email]);
       const user = rows[0];
 
-      const isAdminCandidate = user?.role === 'admin';
-      if (!isAdminCandidate) {
-        const [[attempt]] = await pool.execute(
-          'SELECT COUNT(*) AS failed FROM login_attempts WHERE email = ? AND success = 0 AND created_at > DATE_SUB(NOW(), INTERVAL 2 MINUTE)',
-          [email]
-        );
-        if (Number(attempt.failed || 0) >= 5) {
-          return res.status(429).json({ message: 'พยายามเข้าสู่ระบบหลายครั้งเกินไป กรุณารอ 2 นาที' });
-        }
+      const [[attempt]] = await pool.execute(
+        'SELECT COUNT(*) AS failed FROM login_attempts WHERE (email = ? OR ip_address = ?) AND success = 0 AND created_at > DATE_SUB(NOW(), INTERVAL 10 MINUTE)',
+        [email, req.ip]
+      );
+      if (Number(attempt.failed || 0) >= 5) {
+        return res.status(429).json({ message: 'พยายามเข้าสู่ระบบหลายครั้งเกินไป กรุณารอ 10 นาที' });
       }
 
-      const passwordOk = user && (
-        user.password_hash === password ||
-        await bcrypt.compare(password, user.password_hash).catch(() => false)
-      );
+      const isLegacyPlaintext = Boolean(user && user.password_hash === password);
+      const passwordOk = Boolean(user && (
+        isLegacyPlaintext || await bcrypt.compare(password, user.password_hash).catch(() => false)
+      ));
       await pool.execute('INSERT INTO login_attempts (email, ip_address, success) VALUES (?, ?, ?)', [email, req.ip, passwordOk ? 1 : 0]);
 
       if (!passwordOk) return res.status(401).json({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
       if (user.status && user.status !== 'active') return res.status(403).json({ message: 'บัญชีนี้ถูกปิดใช้งาน' });
+
+      if (isLegacyPlaintext) {
+        const upgradedHash = await bcrypt.hash(password, 12);
+        await pool.execute('UPDATE users SET password_hash = ? WHERE id = ?', [upgradedHash, user.id]);
+      }
 
       res.json(signUser(user));
     } catch (error) {
@@ -78,7 +84,7 @@ router.post('/login',
 router.post('/register',
   body('name').notEmpty(),
   body('email').isEmail(),
-  body('password').isLength({ min: 6 }),
+  body('password').isLength({ min: 8, max: 128 }),
   async (req, res, next) => {
     try {
       const errors = validationResult(req);
@@ -87,7 +93,7 @@ router.post('/register',
       const name = String(req.body.name || '').trim();
       const email = String(req.body.email || '').trim().toLowerCase();
       const department = String(req.body.department || '').trim();
-      const passwordHash = await bcrypt.hash(String(req.body.password || ''), 10);
+      const passwordHash = await bcrypt.hash(String(req.body.password || ''), 12);
       const [existing] = await pool.execute('SELECT id FROM users WHERE email = ? LIMIT 1', [email]);
       if (existing.length) return res.status(409).json({ message: 'อีเมลนี้ถูกใช้งานแล้ว' });
 

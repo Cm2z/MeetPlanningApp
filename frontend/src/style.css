@@ -4547,6 +4547,80 @@ button.primary:hover {
     gap: 8px !important;
   }
 }
+
+/* Final responsive modal guard: one predictable scroll container on touch devices. */
+@media (max-width: 820px) {
+  .room-modal-backdrop {
+    padding: 10px !important;
+    overflow: hidden !important;
+  }
+
+  .room-booking-modal {
+    display: block !important;
+    width: min(100%, 680px) !important;
+    height: calc(100dvh - 20px) !important;
+    max-height: calc(100dvh - 20px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable;
+  }
+
+  .room-modal-gallery {
+    display: grid !important;
+    grid-template-rows: minmax(0, 1fr) 58px !important;
+    height: clamp(220px, 38dvh, 340px) !important;
+    min-height: 220px !important;
+    overflow: hidden !important;
+  }
+
+  .room-modal-main-image {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    object-fit: cover !important;
+  }
+
+  .room-modal-info {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .room-booking-modal .modal-submit-button {
+    position: static !important;
+    width: 100% !important;
+    margin-top: 6px !important;
+  }
+
+  .modal-close {
+    position: fixed !important;
+    top: max(18px, env(safe-area-inset-top)) !important;
+    right: max(18px, env(safe-area-inset-right)) !important;
+    z-index: 20 !important;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 520px) {
+  .room-modal-backdrop { padding: 0 !important; }
+  .room-booking-modal {
+    width: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+  }
+  .room-modal-gallery {
+    height: clamp(205px, 36dvh, 280px) !important;
+    min-height: 205px !important;
+    grid-template-rows: minmax(0, 1fr) 56px !important;
+  }
+}
 /* MEETPLANNING_BOOKING_POPUP_VIEWPORT_FIT_20260814_END */
 
 /* Shared MeetPlanning logo for desktop sidebar and mobile header. */
@@ -4855,6 +4929,107 @@ body {
     background: #edf5ff !important;
   }
 }
+
+/* MEETPLANNING_BOOKING_MODAL_TABLET_MOBILE_FIX_20260825 */
+html.room-modal-open,
+body.room-modal-open {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+
+.room-modal-backdrop {
+  overflow: hidden !important;
+  overscroll-behavior: contain !important;
+}
+
+@media (max-width: 1100px) {
+  .room-booking-modal {
+    max-width: 760px !important;
+  }
+
+  /* A sticky disabled button was floating over the attendee/purpose fields on
+     iPad. Keep it in normal document flow inside the scrollable info pane. */
+  .room-booking-modal .modal-submit-button {
+    position: static !important;
+    inset: auto !important;
+    box-shadow: none !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .room-modal-backdrop {
+    padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .room-booking-modal {
+    width: min(100%, 680px) !important;
+    height: calc(100dvh - max(16px, env(safe-area-inset-top)) - max(16px, env(safe-area-inset-bottom))) !important;
+    max-height: none !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: clamp(190px, 34dvh, 310px) minmax(0, 1fr) !important;
+    overflow: hidden !important;
+    border-radius: 22px !important;
+  }
+
+  .room-modal-gallery {
+    min-height: 0 !important;
+    overflow: hidden !important;
+    grid-template-rows: minmax(0, 1fr) 58px !important;
+  }
+
+  .room-modal-main-image {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  .room-modal-info {
+    min-height: 0 !important;
+    height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 16px 16px calc(22px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .room-modal-backdrop {
+    padding: 0 !important;
+  }
+
+  .room-booking-modal {
+    width: 100% !important;
+    height: 100dvh !important;
+    grid-template-rows: clamp(175px, 31dvh, 235px) minmax(0, 1fr) !important;
+    border-radius: 0 !important;
+  }
+
+  .room-modal-gallery {
+    padding: max(10px, env(safe-area-inset-top)) 10px 8px !important;
+    grid-template-rows: minmax(0, 1fr) 52px !important;
+  }
+
+  .room-modal-thumbs {
+    grid-auto-columns: 68px !important;
+  }
+
+  .room-modal-thumbs button {
+    height: 48px !important;
+  }
+
+  .room-modal-info {
+    padding: 14px 14px calc(20px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .modal-close {
+    top: max(10px, env(safe-area-inset-top)) !important;
+    right: 10px !important;
+  }
+}
+/* MEETPLANNING_BOOKING_MODAL_TABLET_MOBILE_FIX_20260825_END */
 /* MEETPLANNING_UNIFIED_NAVY_THEME_20260825_END */
 
 /* MEETPLANNING_FIXED_DESKTOP_SIDEBAR_20260825 */
@@ -5682,5 +5857,153 @@ body {
     max-width: 100%;
     object-fit: contain;
     object-position: left center;
+  }
+}
+
+/* Final cascade guard for the booking popup on iPad and phones. */
+html.room-modal-open,
+body.room-modal-open {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+
+@media (max-width: 1100px) {
+  .room-booking-modal .modal-submit-button {
+    position: static !important;
+    inset: auto !important;
+    box-shadow: none !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .room-modal-backdrop {
+    overflow: hidden !important;
+    padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)) !important;
+    place-items: center !important;
+  }
+
+  .room-booking-modal {
+    width: min(100%, 680px) !important;
+    height: calc(100dvh - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: clamp(190px, 34dvh, 310px) minmax(0, 1fr) !important;
+    overflow: hidden !important;
+    border-radius: 22px !important;
+  }
+
+  .room-modal-gallery {
+    min-height: 0 !important;
+    overflow: hidden !important;
+    grid-template-rows: minmax(0, 1fr) 58px !important;
+  }
+
+  .room-modal-main-image {
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  .room-modal-info {
+    min-height: 0 !important;
+    height: 100% !important;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .room-modal-backdrop {
+    padding: 0 !important;
+  }
+
+  .room-booking-modal {
+    width: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    grid-template-rows: clamp(175px, 31dvh, 235px) minmax(0, 1fr) !important;
+    border-radius: 0 !important;
+  }
+
+  .room-modal-gallery {
+    grid-template-rows: minmax(0, 1fr) 52px !important;
+  }
+
+  .room-modal-info {
+    padding: 14px 14px calc(20px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* Touch modal v3 — keep this block last so older compatibility rules cannot override it. */
+@media (max-width: 820px) {
+  .room-modal-backdrop {
+    padding: 10px !important;
+    overflow: hidden !important;
+  }
+  .room-booking-modal {
+    display: block !important;
+    width: min(100%, 680px) !important;
+    height: calc(100dvh - 20px) !important;
+    max-height: calc(100dvh - 20px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-gutter: stable;
+  }
+  .room-modal-gallery {
+    display: grid !important;
+    grid-template-rows: minmax(0, 1fr) 58px !important;
+    height: clamp(220px, 38dvh, 340px) !important;
+    min-height: 220px !important;
+    overflow: hidden !important;
+  }
+  .room-modal-main-image {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    object-fit: cover !important;
+  }
+  .room-modal-info {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+  }
+  .room-booking-modal .modal-submit-button {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    margin-top: 6px !important;
+  }
+  .modal-close {
+    position: sticky !important;
+    float: right;
+    top: max(10px, env(safe-area-inset-top)) !important;
+    right: max(10px, env(safe-area-inset-right)) !important;
+    margin-bottom: -54px;
+    z-index: 20 !important;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 520px) {
+  .room-modal-backdrop { padding: 0 !important; }
+  .room-booking-modal {
+    width: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+  }
+  .room-modal-gallery {
+    height: clamp(205px, 36dvh, 280px) !important;
+    min-height: 205px !important;
+    grid-template-rows: minmax(0, 1fr) 56px !important;
   }
 }

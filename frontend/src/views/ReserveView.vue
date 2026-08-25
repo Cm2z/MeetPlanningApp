@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { api } from '../api.js';
 
 const props = defineProps({ state: Object });
@@ -8,6 +8,7 @@ const showRoomModal = ref(false);
 const previewIndex = ref(0);
 const availabilityStatus = ref('idle');
 const availabilityMessage = ref('เลือกวันและเวลาเพื่อเช็กสถานะห้อง');
+const modalCloseButton = ref(null);
 let availabilityTimer = null;
 let availabilityRun = 0;
 
@@ -40,6 +41,10 @@ function closeRoom() {
   showRoomModal.value = false;
 }
 
+function handleModalKeydown(event) {
+  if (event.key === 'Escape') closeRoom();
+}
+
 function setAvailability(status, message) {
   availabilityStatus.value = status;
   availabilityMessage.value = message;
@@ -48,7 +53,7 @@ function setAvailability(status, message) {
 function selectedDateTime(time) {
   const { date } = props.state.searchForm;
   if (!date || !time) return null;
-  const value = new Date(`${date}T${time}:00`);
+  const value = new Date(`${date}T${time}:00+07:00`);
   return Number.isNaN(value.getTime()) ? null : value;
 }
 
@@ -132,6 +137,24 @@ watch(
     if (showRoomModal.value) scheduleAvailabilityCheck();
   }
 );
+
+watch(showRoomModal, (isOpen) => {
+  document.documentElement.classList.toggle('room-modal-open', isOpen);
+  document.body.classList.toggle('room-modal-open', isOpen);
+  if (isOpen) {
+    window.addEventListener('keydown', handleModalKeydown);
+    nextTick(() => modalCloseButton.value?.focus());
+  } else {
+    window.removeEventListener('keydown', handleModalKeydown);
+  }
+});
+
+onBeforeUnmount(() => {
+  window.clearTimeout(availabilityTimer);
+  document.documentElement.classList.remove('room-modal-open');
+  document.body.classList.remove('room-modal-open');
+  window.removeEventListener('keydown', handleModalKeydown);
+});
 </script>
 
 <template>
@@ -205,8 +228,8 @@ watch(
 
     <Teleport to="body">
       <div v-if="showRoomModal && state.selectedRoom.value" class="room-modal-backdrop" @click.self="closeRoom">
-        <section class="room-booking-modal" role="dialog" aria-modal="true">
-          <button class="modal-close" type="button" @click="closeRoom">ปิด</button>
+        <section class="room-booking-modal" role="dialog" aria-modal="true" aria-labelledby="room-modal-title">
+          <button ref="modalCloseButton" class="modal-close" type="button" aria-label="ปิดหน้าต่างรายละเอียดห้อง" @click="closeRoom">ปิด</button>
 
           <div class="room-modal-gallery">
             <img
@@ -229,7 +252,7 @@ watch(
 
           <div class="room-modal-info">
             <p class="eyebrow">รายละเอียดสถานที่</p>
-            <h2>{{ state.selectedRoom.value.name }}</h2>
+            <h2 id="room-modal-title">{{ state.selectedRoom.value.name }}</h2>
             <p class="muted">
               {{ state.selectedRoom.value.branch_name || '-' }} ·
               {{ state.selectedRoom.value.building || '-' }} ·
