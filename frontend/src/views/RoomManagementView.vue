@@ -1,4 +1,5 @@
 <script setup>
+import { appConfirm, appPrompt } from '../dialog.js';
 import { computed, onMounted, reactive, ref } from 'vue';
 import { api } from '../api.js';
 import { Building2, ImagePlus, Pencil, Plus, Power, RefreshCw, Save, X } from '@lucide/vue';
@@ -123,8 +124,8 @@ async function saveRoom() {
 }
 
 async function disableRoom(room) {
-  if (!window.confirm('ต้องการปิดใช้งานห้อง “' + room.name + '” ใช่หรือไม่')) return;
-  const typedName = window.prompt('พิมพ์ชื่อห้องเพื่อยืนยันการปิดใช้งาน');
+  if (!await appConfirm('ต้องการปิดใช้งานห้อง “' + room.name + '” ใช่หรือไม่', { title: 'ปิดใช้งานห้องประชุม', confirmText: 'ดำเนินการต่อ', variant: 'warning' })) return;
+  const typedName = await appPrompt('พิมพ์ชื่อห้อง “' + room.name + '” ให้ตรงกันเพื่อยืนยัน', { title: 'ยืนยันชื่อห้อง', inputLabel: 'ชื่อห้องประชุม', placeholder: room.name, confirmText: 'ปิดใช้งานห้อง', variant: 'danger' });
   if (typedName !== room.name) {
     props.state.notify('ชื่อห้องไม่ตรงกัน จึงยังไม่ปิดใช้งาน');
     return;

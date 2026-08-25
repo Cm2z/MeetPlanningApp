@@ -56,10 +56,16 @@ git add -- ^
   backend/src/routes/notifications.js ^
   backend/src/server.js ^
   frontend/package-lock.json ^
+  frontend/src/dialog.js ^
   frontend/src/composables/useMeetPlanning.js ^
+  frontend/src/components/AppDialog.vue ^
   frontend/src/style.css ^
+  frontend/src/App.vue ^
   frontend/src/views/AuthView.vue ^
+  frontend/src/views/BookingsView.vue ^
   frontend/src/views/ReserveView.vue ^
+  frontend/src/views/RoomManagementView.vue ^
+  frontend/src/views/UserManagementView.vue ^
   PUSH_UI_SECURITY_FIX.bat
 if errorlevel 1 goto :git_add_failed
 

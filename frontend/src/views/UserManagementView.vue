@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
+import { appConfirm } from '../dialog.js';
 
 const props = defineProps({ state: Object });
 const query = ref('');
@@ -16,14 +17,14 @@ const filteredUsers = computed(() => {
 async function changeRole(user) {
   const nextRole = user.role === 'staff' ? 'user' : 'staff';
   const label = nextRole === 'staff' ? 'แต่งตั้งเป็น Staff' : 'ถอด Staff กลับเป็น User';
-  if (!window.confirm(label + ' สำหรับ ' + user.name + ' ใช่หรือไม่')) return;
+  if (!await appConfirm(label + ' สำหรับ ' + user.name + ' ใช่หรือไม่', { title: 'ยืนยันการเปลี่ยนสิทธิ์', confirmText: label })) return;
   busyId.value = user.id;
   await props.state.updateUserRole(user, nextRole);
   busyId.value = null;
 }
 
 async function clearHistory(user) {
-  if (!window.confirm('ลบประวัติการจองและแจ้งเตือนของ ' + user.name + ' เท่านั้นใช่หรือไม่?\nการดำเนินการนี้ย้อนกลับไม่ได้')) return;
+  if (!await appConfirm('ลบประวัติการจองและแจ้งเตือนของ ' + user.name + ' เท่านั้น การดำเนินการนี้ย้อนกลับไม่ได้', { title: 'ล้างประวัติผู้ใช้', confirmText: 'ล้างประวัติ', variant: 'danger' })) return;
   busyId.value = user.id;
   await props.state.clearUserBookingHistory(user);
   busyId.value = null;

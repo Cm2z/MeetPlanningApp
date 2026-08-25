@@ -4548,6 +4548,140 @@ button.primary:hover {
   }
 }
 
+/* Global MeetPlanning confirmation / prompt dialog. */
+.app-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(5, 24, 50, .58);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.app-dialog-card {
+  position: relative;
+  width: min(470px, 100%);
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 16px;
+  padding: 26px;
+  overflow: hidden;
+  border: 1px solid rgba(125, 168, 220, .38);
+  border-radius: 22px;
+  background: linear-gradient(145deg, #fff 0%, #f7fbff 100%);
+  color: #102d50;
+  box-shadow: 0 30px 90px rgba(3, 18, 38, .32), 0 2px 8px rgba(3, 18, 38, .12);
+}
+
+.app-dialog-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #0f6fdb, #40a3ff);
+}
+
+.app-dialog-card.danger::before { background: linear-gradient(90deg, #c93434, #ff6b6b); }
+.app-dialog-card.warning::before { background: linear-gradient(90deg, #d17a00, #ffb020); }
+.app-dialog-card.success::before { background: linear-gradient(90deg, #07845f, #22c98b); }
+
+.app-dialog-icon {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: #eaf4ff;
+  color: #0f6fdb;
+}
+.app-dialog-icon svg { width: 27px; height: 27px; }
+.app-dialog-card.danger .app-dialog-icon { background: #fff0f0; color: #c93434; }
+.app-dialog-card.warning .app-dialog-icon { background: #fff7e7; color: #c56e00; }
+.app-dialog-card.success .app-dialog-icon { background: #e7faf2; color: #07845f; }
+
+.app-dialog-copy { min-width: 0; padding-right: 24px; }
+.app-dialog-eyebrow { margin: 0 0 3px; color: #0f6fdb; font-size: 11px; font-weight: 900; letter-spacing: .13em; }
+.app-dialog-copy h2 { margin: 0; color: #0c294b; font-size: 22px; line-height: 1.35; }
+.app-dialog-copy > p:last-child { margin: 8px 0 0; color: #5b6f87; line-height: 1.7; white-space: pre-line; }
+
+.app-dialog-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #6b7e93;
+}
+.app-dialog-close:hover { background: #eaf3ff; color: #0f5fb8; }
+.app-dialog-close svg { width: 20px; height: 20px; }
+
+.app-dialog-input,
+.app-dialog-actions { grid-column: 1 / -1; }
+.app-dialog-input { display: grid; gap: 7px; color: #263f5c; font-weight: 800; }
+.app-dialog-input input {
+  min-height: 48px;
+  padding: 10px 13px;
+  border: 1px solid #bfd3ea;
+  border-radius: 12px;
+  background: #fff;
+  color: #102d50;
+  outline: none;
+}
+.app-dialog-input input:focus { border-color: #2279dc; box-shadow: 0 0 0 4px rgba(34, 121, 220, .13); }
+
+.app-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 2px; }
+.app-dialog-actions button {
+  min-width: 112px;
+  min-height: 46px;
+  padding: 9px 17px;
+  border-radius: 12px;
+  font-weight: 850;
+}
+.app-dialog-cancel { border: 1px solid #c7d8ea; background: #fff; color: #294866; }
+.app-dialog-confirm { border: 0; background: #176fce; color: #fff; box-shadow: 0 8px 20px rgba(23, 111, 206, .22); }
+.app-dialog-confirm.danger { background: #c93434; box-shadow: 0 8px 20px rgba(201, 52, 52, .22); }
+.app-dialog-confirm.warning { background: #c97800; box-shadow: 0 8px 20px rgba(201, 120, 0, .22); }
+.app-dialog-confirm.success { background: #07845f; box-shadow: 0 8px 20px rgba(7, 132, 95, .22); }
+.app-dialog-actions button:hover { transform: translateY(-1px); filter: brightness(.98); }
+.app-dialog-actions button:focus-visible,
+.app-dialog-close:focus-visible { outline: 3px solid rgba(34, 121, 220, .32); outline-offset: 2px; }
+
+.app-dialog-fade-enter-active,
+.app-dialog-fade-leave-active { transition: opacity .18s ease; }
+.app-dialog-fade-enter-active .app-dialog-card,
+.app-dialog-fade-leave-active .app-dialog-card { transition: transform .2s ease, opacity .18s ease; }
+.app-dialog-fade-enter-from,
+.app-dialog-fade-leave-to { opacity: 0; }
+.app-dialog-fade-enter-from .app-dialog-card { opacity: 0; transform: translateY(12px) scale(.97); }
+.app-dialog-fade-leave-to .app-dialog-card { opacity: 0; transform: translateY(6px) scale(.98); }
+
+@media (max-width: 520px) {
+  .app-dialog-backdrop { align-items: end; padding: 12px; }
+  .app-dialog-card { grid-template-columns: 46px minmax(0, 1fr); gap: 13px; padding: 22px 18px calc(18px + env(safe-area-inset-bottom)); border-radius: 20px; }
+  .app-dialog-icon { width: 46px; height: 46px; border-radius: 14px; }
+  .app-dialog-copy h2 { font-size: 20px; }
+  .app-dialog-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .app-dialog-actions button { min-width: 0; width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-dialog-fade-enter-active,
+  .app-dialog-fade-leave-active,
+  .app-dialog-fade-enter-active .app-dialog-card,
+  .app-dialog-fade-leave-active .app-dialog-card { transition: none; }
+}
+
 /* Final responsive modal guard: one predictable scroll container on touch devices. */
 @media (max-width: 820px) {
   .room-modal-backdrop {

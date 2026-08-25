@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import BookingDetailModal from '../components/BookingDetailModal.vue';
+import { appConfirm } from '../dialog.js';
 
 const props = defineProps({ state: Object });
 
@@ -69,7 +70,8 @@ function clearFilters() {
 
 async function updateStatus(booking, status) {
   const text = status === 'approved' ? 'อนุมัติ' : status === 'rejected' ? 'ปฏิเสธ' : 'ยืนยันว่าเสร็จสิ้น';
-  if (!window.confirm(text + 'รายการ “' + booking.title + '” ใช่หรือไม่?')) return;
+  const variant = status === 'rejected' ? 'danger' : status === 'approved' ? 'success' : 'primary';
+  if (!await appConfirm(text + 'รายการ “' + booking.title + '” ใช่หรือไม่?', { title: text + 'รายการจอง', confirmText: text, variant })) return;
   await props.state.setStatus(booking, status);
 }
 </script>

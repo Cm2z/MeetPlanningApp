@@ -283,21 +283,6 @@ export function useMeetPlanning() {
     notify('อ่านแจ้งเตือนทั้งหมดแล้ว');
   }
 
-  function ownerDeleteConfirmation(label) {
-    if (!isAdmin.value) {
-      notify('เฉพาะผู้ดูแลระบบเท่านั้นที่ลบแจ้งเตือนได้');
-      return null;
-    }
-    if (!window.confirm('ต้องการลบ "' + label + '" ใช่หรือไม่')) return null;
-    const deleteCode = window.prompt('กรอกรหัสยืนยัน 1234');
-    if (deleteCode !== '1234') {
-      notify('รหัสยืนยันไม่ถูกต้อง');
-      return null;
-    }
-    return { deleteCode };
-  }
-
-
   async function deleteNotification(item, confirmation = {}) {
     if (!item?.id) return;
     if (!isAdmin.value) {
