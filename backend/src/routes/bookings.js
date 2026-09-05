@@ -7,6 +7,11 @@ import { completeExpiredCheckedInBookings } from '../utils/bookingLifecycle.js';
 
 const router = Router();
 const allowedStatuses = ['pending','approved','rejected','cancelled','checked_in','completed','no_show'];
+const statusTransitions = {
+  pending: ['approved', 'rejected', 'cancelled'],
+  approved: ['checked_in', 'completed', 'cancelled', 'no_show'],
+  checked_in: ['completed', 'cancelled'],
+};
 
 function canSeeAllBookings(user) {
   return user?.role === 'admin' || user?.role === 'staff';
@@ -156,13 +161,38 @@ router.post('/', requireAuth, body('roomId').isInt({ min: 1 }), body('title').no
 });
 
 router.patch('/:id/status', requireAuth, requireRole('admin', 'staff'), async (req, res, next) => {
+  let connection;
   try {
     const { status } = req.body;
     if (!allowedStatuses.includes(status)) return res.status(422).json({ message: 'สถานะไม่ถูกต้อง' });
-    const [[booking]] = await pool.execute('SELECT b.user_id, b.title, b.start_at, b.end_at, r.name AS room_name FROM bookings b JOIN rooms r ON r.id=b.room_id WHERE b.id = ?', [req.params.id]);
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+    const [[booking]] = await connection.execute('SELECT b.id, b.room_id, b.status, b.user_id, b.title, b.start_at, b.end_at, r.name AS room_name FROM bookings b JOIN rooms r ON r.id=b.room_id WHERE b.id = ? FOR UPDATE', [req.params.id]);
+    if (!booking) {
+      await connection.rollback();
+      return res.status(404).json({ message: 'ไม่พบรายการจอง' });
+    }
+    if (!statusTransitions[booking.status]?.includes(status)) {
+      await connection.rollback();
+      return res.status(409).json({ message: 'ไม่สามารถเปลี่ยนสถานะรายการนี้ได้ กรุณารีเฟรชรายการจอง' });
+    }
+    if (status === 'approved' || status === 'checked_in') {
+      // Recheck legacy overlapping records and exclude the booking itself.
+      const [conflicts] = await connection.execute(
+        "SELECT id FROM bookings WHERE room_id = ? AND id <> ? AND status IN ('pending','approved','checked_in') AND ? < end_at AND ? > start_at LIMIT 1 FOR UPDATE",
+        [booking.room_id, booking.id, booking.start_at, booking.end_at]
+      );
+      if (conflicts.length) {
+        await connection.rollback();
+        return res.status(409).json({ message: 'ช่วงเวลานี้มีการจองแล้ว ไม่สามารถเปลี่ยนสถานะได้' });
+      }
+    }
     const extra = status === 'approved' ? ', approved_by = ?, approved_at = NOW()' : status === 'checked_in' ? ', checked_in_at = NOW()' : status === 'completed' ? ', completed_at = NOW()' : '';
     const params = status === 'approved' ? [status, req.user.id, req.params.id] : [status, req.params.id];
-    await pool.execute('UPDATE bookings SET status = ?' + extra + ' WHERE id = ?', params);
+    await connection.execute('UPDATE bookings SET status = ?' + extra + ' WHERE id = ?', params);
+    await connection.commit();
+    connection.release();
+    connection = null;
     await audit(req.user.id, 'update_booking_status', 'booking', req.params.id, { status });
     if (booking) {
       if (status === 'approved') {
@@ -179,7 +209,12 @@ router.patch('/:id/status', requireAuth, requireRole('admin', 'staff'), async (r
       }
     }
     res.json({ message: 'อัปเดตสถานะเรียบร้อย' });
-  } catch (error) { next(error); }
+  } catch (error) {
+    if (connection) await connection.rollback();
+    next(error);
+  } finally {
+    if (connection) connection.release();
+  }
 });
 
 router.patch('/:id/check-in', requireAuth, async (req, res, next) => {

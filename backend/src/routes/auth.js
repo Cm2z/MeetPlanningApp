@@ -142,8 +142,10 @@ router.get('/session', requireAuth, async (req, res, next) => {
   try {
     const [[user]] = await pool.execute('SELECT * FROM users WHERE id = ? AND status = "active" LIMIT 1', [req.user.id]);
     if (!user) return res.status(401).json({ message: 'ไม่พบเซสชันผู้ใช้' });
-    const { token: _token, ...session } = signUser(user);
-    res.json(session);
+    // Reissue the cookie from the current database record. This keeps API
+    // authorization in sync immediately after an admin promotes or demotes
+    // a user, instead of leaving the old role inside the existing JWT.
+    establishSession(res, user);
   } catch (error) { next(error); }
 });
 
