@@ -6,6 +6,7 @@ export const dialogState = reactive({
   message: '',
   confirmText: 'ยืนยัน',
   cancelText: 'ยกเลิก',
+  showCancel: true,
   variant: 'primary',
   input: null,
   inputValue: '',
@@ -20,6 +21,7 @@ function showDialog(options = {}) {
     message: options.message || '',
     confirmText: options.confirmText || 'ยืนยัน',
     cancelText: options.cancelText || 'ยกเลิก',
+    showCancel: options.showCancel !== false,
     variant: options.variant || 'primary',
     input: options.input || null,
     inputValue: options.input?.value || '',
@@ -29,6 +31,15 @@ function showDialog(options = {}) {
 
 export function appConfirm(message, options = {}) {
   return showDialog({ ...options, message });
+}
+
+export function appAlert(message, options = {}) {
+  return showDialog({
+    ...options,
+    message,
+    confirmText: options.confirmText || 'รับทราบ',
+    showCancel: false,
+  });
 }
 
 export function appPrompt(message, options = {}) {

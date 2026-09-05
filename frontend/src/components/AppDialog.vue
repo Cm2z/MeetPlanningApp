@@ -39,7 +39,7 @@ function confirm() {
             <input ref="inputElement" v-model="dialogState.inputValue" :type="dialogState.input.type" :placeholder="dialogState.input.placeholder" :required="dialogState.input.required" autocomplete="off" />
           </label>
           <div class="app-dialog-actions">
-            <button class="app-dialog-cancel" type="button" @click="resolveDialog(false)">{{ dialogState.cancelText }}</button>
+            <button v-if="dialogState.showCancel" class="app-dialog-cancel" type="button" @click="resolveDialog(false)">{{ dialogState.cancelText }}</button>
             <button ref="confirmButton" class="app-dialog-confirm" :class="'is-' + dialogState.variant" type="submit">{{ dialogState.confirmText }}</button>
           </div>
         </form>

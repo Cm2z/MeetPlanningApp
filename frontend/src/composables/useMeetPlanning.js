@@ -1,5 +1,6 @@
 
 import { computed, reactive, ref } from 'vue';
+import { appAlert } from '../dialog.js';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 const REQUEST_API_URL = import.meta.env.PROD ? '/api' : API_URL;
@@ -254,7 +255,12 @@ export function useMeetPlanning() {
       if (fresh.length) {
         await loadMyBookings();
         const latest = fresh[0];
-        notify((latest.title || 'มีแจ้งเตือนใหม่') + (latest.message ? ': ' + cleanNotificationMessage(latest.message) : ''));
+        const rejected = String(latest.title || '').includes('ปฏิเสธ');
+        await appAlert(cleanNotificationMessage(latest.message) || 'กรุณาตรวจสอบสถานะรายการจอง', {
+          title: latest.title || 'มีแจ้งเตือนใหม่',
+          confirmText: 'รับทราบ',
+          variant: rejected ? 'danger' : 'success',
+        });
       }
     } catch {
       // Polling is best effort; normal API actions still surface their errors.
