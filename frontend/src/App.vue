@@ -1,6 +1,6 @@
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, onBeforeUnmount, onMounted } from 'vue';
 import AppSidebar from './components/AppSidebar.vue';
 import AppTopbar from './components/AppTopbar.vue';
 import ToastMessage from './components/ToastMessage.vue';
@@ -38,6 +38,7 @@ const titleMap = {
 
 const pageTitle = computed(() => titleMap[state.view.value] || 'หน้าหลัก');
 const isLoggedIn = computed(() => Boolean(state.session.value));
+let notificationTimer = null;
 
 function go(target) {
   if (!isLoggedIn.value) {
@@ -69,7 +70,10 @@ onMounted(async () => {
     state.view.value = 'auth';
     state.authMode.value = 'login';
   }
+  notificationTimer = window.setInterval(() => state.pollNotifications?.(), 10_000);
 });
+
+onBeforeUnmount(() => window.clearInterval(notificationTimer));
 </script>
 
 <template>

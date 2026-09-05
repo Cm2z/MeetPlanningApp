@@ -41,6 +41,7 @@ export function useMeetPlanning() {
   const notificationHasMore = ref(false);
   const notificationSearch = ref('');
   const notificationFilter = ref('all');
+  let notificationPollRunning = false;
 
   const loginForm = reactive({ email: '', password: '' });
   const registerForm = reactive({ name: '', email: '', password: '', department: '' });
@@ -72,7 +73,7 @@ export function useMeetPlanning() {
     toast.value = message || '';
     window.setTimeout(() => {
       if (toast.value === message) toast.value = '';
-    }, 2800);
+    }, 6000);
   }
 
   async function api(path, options = {}) {
@@ -238,6 +239,28 @@ export function useMeetPlanning() {
     const normalized = normalizeNotifications(result);
     notifications.value = reset ? normalized.rows : [...notifications.value, ...normalized.rows];
     notificationHasMore.value = normalized.hasMore;
+  }
+
+  async function pollNotifications() {
+    if (!session.value || canManageBookings.value || notificationPollRunning) return;
+    notificationPollRunning = true;
+    try {
+      const knownIds = new Set(notifications.value.map((item) => Number(item.id)));
+      const result = await api('/notifications?page=1&limit=30');
+      const normalized = normalizeNotifications(result);
+      const fresh = normalized.rows.filter((item) => !knownIds.has(Number(item.id)) && !isNotificationRead(item));
+      notifications.value = normalized.rows;
+      notificationHasMore.value = normalized.hasMore;
+      if (fresh.length) {
+        await loadMyBookings();
+        const latest = fresh[0];
+        notify((latest.title || 'มีแจ้งเตือนใหม่') + (latest.message ? ': ' + cleanNotificationMessage(latest.message) : ''));
+      }
+    } catch {
+      // Polling is best effort; normal API actions still surface their errors.
+    } finally {
+      notificationPollRunning = false;
+    }
   }
 
   async function loadMoreNotifications() {
@@ -624,6 +647,7 @@ export function useMeetPlanning() {
     loadRecurring,
     loadWaitlist,
     loadNotifications,
+    pollNotifications,
     loadMoreNotifications,
     setNotificationFilter,
     isNotificationRead,
