@@ -2,6 +2,16 @@
 
 ระบบจองและจัดหาห้องประชุม สร้างด้วย Vue 3 + Node.js + MySQL
 
+## โครงสร้างและคู่มือ
+
+- `frontend/`: หน้าเว็บ Vue
+- `backend/`: API, บริการ และการทดสอบ
+- `database/`: SQL สำหรับติดตั้งฐานข้อมูล
+- `docs/`: [โครงสร้างโค้ด](docs/PROJECT_STRUCTURE_TH.md), [การ deploy](docs/RAILWAY_DEPLOY_TH.md), [เพิ่มสถานที่](docs/HOW_TO_ADD_LOCATION_TH.md)
+- `scripts/`: เครื่องมืองานเอกสารและสคริปต์ release
+
+ตรวจสอบด้วย `npm --prefix frontend run build` และ `npm --prefix backend test`
+
 ## ฟีเจอร์หลัก
 
 - เข้าสู่ระบบด้วยบทบาท admin และ user

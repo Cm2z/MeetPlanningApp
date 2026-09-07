@@ -2,8 +2,8 @@ import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import { pool } from '../config/db.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
-import { audit, notify } from '../utils/activity.js';
-import { completeExpiredCheckedInBookings } from '../utils/bookingLifecycle.js';
+import { audit, notify } from '../services/activity.js';
+import { completeExpiredCheckedInBookings } from '../services/bookingLifecycle.js';
 
 const router = Router();
 const allowedStatuses = ['pending','approved','rejected','cancelled','checked_in','completed','no_show'];

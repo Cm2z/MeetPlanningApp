@@ -1,6 +1,6 @@
 
 import { computed, reactive, ref } from 'vue';
-import { appAlert } from '../dialog.js';
+import { appAlert } from '../services/dialog.js';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 const REQUEST_API_URL = import.meta.env.PROD ? '/api' : API_URL;
@@ -286,7 +286,7 @@ export function useMeetPlanning() {
 
   function cleanNotificationMessage(message = '') {
     const text = String(message || '').trim();
-    const match = text.match(/^(.+?)\s*[:：|-]\s*(.+)$/);
+    const match = text.match(/^(.+?)(?:\s*[:：|]\s*|\s+-\s+)(.+)$/);
     return match ? match[2].trim() : text;
   }
 
@@ -513,6 +513,27 @@ export function useMeetPlanning() {
     }
   }
 
+  async function downloadBackup() {
+    if (!requireAdmin()) return;
+    try {
+      const response = await fetch(REQUEST_API_URL + '/backup/download', { credentials: 'include' });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'ดาวน์โหลดข้อมูลสำรองไม่สำเร็จ');
+      }
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'meetplanning-backup.sql';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (error) {
+      notify(error.message);
+    }
+  }
+
   async function restoreBackup() {
     if (!requireAdmin()) return;
     if (!restoreSql.value.trim()) return notify('กรุณาวางข้อมูลสำรอง SQL ก่อน');
@@ -672,6 +693,7 @@ export function useMeetPlanning() {
     loadSettings,
     saveSettings,
     testEmail,
+    downloadBackup,
     restoreBackup,
     loadKiosk,
     loadProfile,

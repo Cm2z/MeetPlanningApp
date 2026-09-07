@@ -9,3 +9,12 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 *.sql.backup
+
+# Local document inputs, generated reports, and temporary QA files
+/document_work/
+/work/
+/output/
+/tmp/
+/qa_*/
+/rendered*/
+__pycache__/

@@ -2,7 +2,7 @@
 import { Router } from 'express';
 import { pool } from '../config/db.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
-import { audit } from '../utils/activity.js';
+import { audit } from '../services/activity.js';
 
 const router = Router();
 router.use(requireAuth, requireRole('admin'));

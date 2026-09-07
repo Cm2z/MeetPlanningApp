@@ -1,7 +1,7 @@
 <script setup>
-import { appConfirm, appPrompt } from '../dialog.js';
+import { appConfirm, appPrompt } from '../../services/dialog.js';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { api } from '../api.js';
+import { api } from '../../services/api.js';
 import { Building2, ImagePlus, Pencil, Plus, Power, RefreshCw, Save, X } from '@lucide/vue';
 
 const props = defineProps({ state: Object });

@@ -9,7 +9,7 @@ defineProps({ state: Object });
     </div>
     <form class="panel form" @submit.prevent="state.restoreBackup">
       <h2>Restore</h2>
-      <textarea v-model="state.restoreSql" rows="12" placeholder="วาง SQL backup ที่นี่"></textarea>
+      <textarea v-model="state.restoreSql.value" rows="12" aria-label="SQL สำหรับกู้คืนข้อมูล" placeholder="วาง SQL backup ที่นี่"></textarea>
       <button class="primary">Restore</button>
     </form>
   </section>

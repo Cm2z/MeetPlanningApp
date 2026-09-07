@@ -2,7 +2,7 @@
 setlocal EnableExtensions
 chcp 65001 >nul
 
-cd /d "%~dp0"
+cd /d "%~dp0..\.."
 title MeetPlanning - Verify, Commit and Push
 
 echo ============================================================
@@ -38,7 +38,7 @@ node --check src/routes/bookings.js || goto :backend_failed
 node --check src/routes/notifications.js || goto :backend_failed
 node --check src/routes/profile.js || goto :backend_failed
 node --check src/routes/settings.js || goto :backend_failed
-node --check src/utils/passwordMigration.js || goto :backend_failed
+node --check src/services/passwordMigration.js || goto :backend_failed
 
 echo.
 echo [4/6] Auditing backend production dependencies...
@@ -61,32 +61,33 @@ git add -- ^
   backend/src/routes/profile.js ^
   backend/src/routes/settings.js ^
   backend/src/server.js ^
-  backend/src/utils/bookingLifecycle.js ^
-  backend/src/utils/passwordMigration.js ^
+  backend/src/app.js ^
+  backend/src/services/bookingLifecycle.js ^
+  backend/src/services/passwordMigration.js ^
   docker-compose.yml ^
   frontend/package-lock.json ^
   frontend/index.html ^
   frontend/public/favicon.png ^
   frontend/public/meetplanning-logo.webp ^
   frontend/public/robots.txt ^
-  frontend/src/api.js ^
+  frontend/src/services/api.js ^
   frontend/src/components/AppSidebar.vue ^
   frontend/src/components/CookieConsent.vue ^
-  frontend/src/dialog.js ^
+  frontend/src/services/dialog.js ^
   frontend/src/composables/useMeetPlanning.js ^
   frontend/src/components/AppDialog.vue ^
-  frontend/src/style.css ^
+  frontend/src/styles/main.css ^
   frontend/src/App.vue ^
-  frontend/src/views/AuthView.vue ^
-  frontend/src/views/BackupView.vue ^
-  frontend/src/views/BookingsView.vue ^
-  frontend/src/views/ReserveView.vue ^
-  frontend/src/views/RoomManagementView.vue ^
-  frontend/src/views/ProfileView.vue ^
-  frontend/src/views/SettingsView.vue ^
-  frontend/src/views/UserManagementView.vue ^
+  frontend/src/views/auth/AuthView.vue ^
+  frontend/src/views/administration/BackupView.vue ^
+  frontend/src/views/bookings/BookingsView.vue ^
+  frontend/src/views/bookings/ReserveView.vue ^
+  frontend/src/views/administration/RoomManagementView.vue ^
+  frontend/src/views/account/ProfileView.vue ^
+  frontend/src/views/administration/SettingsView.vue ^
+  frontend/src/views/administration/UserManagementView.vue ^
   frontend/vite.config.js ^
-  PUSH_UI_SECURITY_FIX.bat
+  scripts/release/PUSH_UI_SECURITY_FIX.bat
 if errorlevel 1 goto :git_add_failed
 
 git diff --cached --check

@@ -1,4 +1,3 @@
-
 <script setup>
 defineProps({ state: Object });
 </script>
@@ -50,26 +49,35 @@ defineProps({ state: Object });
       </div>
 
       <div class="auth-tabs" role="tablist" aria-label="เลือกวิธีเข้าใช้งาน">
-        <button :class="{ active: state.authMode.value === 'login' }" @click="state.authMode.value = 'login'">เข้าสู่ระบบ</button>
-        <button :class="{ active: state.authMode.value === 'register' }" @click="state.authMode.value = 'register'">สมัครสมาชิก</button>
+        <button :class="{ active: state.authMode.value === 'login' }"
+          @click="state.authMode.value = 'login'">เข้าสู่ระบบ</button>
+        <button :class="{ active: state.authMode.value === 'register' }"
+          @click="state.authMode.value = 'register'">สมัครสมาชิก</button>
       </div>
 
       <form v-if="state.authMode.value === 'login'" class="auth-form fit-form" @submit.prevent="state.login">
         <p class="form-help">กรอกอีเมลและรหัสผ่านเพื่อเข้าใช้งานระบบ</p>
-        <label>อีเมล<input v-model="state.loginForm.email" type="email" autocomplete="email" placeholder="name@example.com" required /></label>
-        <label>รหัสผ่าน<input v-model="state.loginForm.password" type="password" autocomplete="current-password" placeholder="กรอกรหัสผ่าน" required /></label>
+        <label>อีเมล<input v-model="state.loginForm.email" type="email" autocomplete="email"
+            placeholder="name@example.com" required /></label>
+        <label>รหัสผ่าน<input v-model="state.loginForm.password" type="password" autocomplete="current-password"
+            placeholder="กรอกรหัสผ่าน" required /></label>
         <button class="primary large-button">เข้าสู่ระบบ</button>
-        <button type="button" class="text-button" @click="state.authMode.value = 'register'">ยังไม่มีบัญชี สมัครสมาชิก</button>
+        <button type="button" class="text-button" @click="state.authMode.value = 'register'">ยังไม่มีบัญชี
+          สมัครสมาชิก</button>
       </form>
 
       <form v-else class="auth-form fit-form" @submit.prevent="state.register">
         <p class="form-help">สร้างบัญชีใหม่เพื่อเริ่มจองห้องประชุม</p>
-        <label>ชื่อ-นามสกุล<input v-model="state.registerForm.name" autocomplete="name" placeholder="เช่น สมชาย ใจดี" required /></label>
-        <label>อีเมล<input v-model="state.registerForm.email" type="email" autocomplete="email" placeholder="name@example.com" required /></label>
-        <label>รหัสผ่าน<input v-model="state.registerForm.password" type="password" autocomplete="new-password" minlength="6" placeholder="อย่างน้อย 6 ตัวอักษร" required /></label>
+        <label>ชื่อ-นามสกุล<input v-model="state.registerForm.name" autocomplete="name" placeholder="เช่น สมชาย ใจดี"
+            required /></label>
+        <label>อีเมล<input v-model="state.registerForm.email" type="email" autocomplete="email"
+            placeholder="name@example.com" required /></label>
+        <label>รหัสผ่าน<input v-model="state.registerForm.password" type="password" autocomplete="new-password"
+            minlength="6" placeholder="อย่างน้อย 6 ตัวอักษร" required /></label>
         <label>แผนก<input v-model="state.registerForm.department" placeholder="เช่น บัญชี, บุคคล, IT" /></label>
         <button class="primary large-button">สมัครสมาชิก</button>
-        <button type="button" class="text-button" @click="state.authMode.value = 'login'">มีบัญชีแล้ว เข้าสู่ระบบ</button>
+        <button type="button" class="text-button" @click="state.authMode.value = 'login'">มีบัญชีแล้ว
+          เข้าสู่ระบบ</button>
       </form>
     </section>
   </main>

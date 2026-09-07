@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { appConfirm } from '../dialog.js';
+import { appConfirm } from '../../services/dialog.js';
 
 const props = defineProps({ state: Object });
 const query = ref('');

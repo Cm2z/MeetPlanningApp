@@ -2,7 +2,7 @@
 import { Router } from 'express';
 import { pool } from '../config/db.js';
 import { requireAuth } from '../middleware/auth.js';
-import { audit, notify } from '../utils/activity.js';
+import { audit, notify } from '../services/activity.js';
 
 const router = Router();
 router.use(requireAuth);

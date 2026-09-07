@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import BookingDetailModal from '../components/BookingDetailModal.vue';
-import { appConfirm } from '../dialog.js';
+import BookingDetailModal from '../../components/BookingDetailModal.vue';
+import { appConfirm } from '../../services/dialog.js';
 
 const props = defineProps({ state: Object });
 

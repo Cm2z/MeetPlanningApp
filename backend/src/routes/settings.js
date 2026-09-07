@@ -2,8 +2,8 @@
 import { Router } from 'express';
 import { pool } from '../config/db.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
-import { audit } from '../utils/activity.js';
-import { sendMail } from '../utils/mailer.js';
+import { audit } from '../services/activity.js';
+import { sendMail } from '../services/mailer.js';
 
 const router = Router();
 const ALLOWED_SETTINGS = new Set([

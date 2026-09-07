@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import BookingDetailModal from '../components/BookingDetailModal.vue';
+import BookingDetailModal from '../../components/BookingDetailModal.vue';
 
 defineProps({ state: Object });
 

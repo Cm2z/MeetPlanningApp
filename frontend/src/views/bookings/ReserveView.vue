@@ -1,6 +1,6 @@
 <script setup>
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
-import { api } from '../api.js';
+import { api } from '../../services/api.js';
 
 const props = defineProps({ state: Object });
 
@@ -167,7 +167,7 @@ onBeforeUnmount(() => {
       <span class="soft-pill">{{ state.rooms.value.length }} ห้องว่าง</span>
     </div>
 
-    <form class="panel reserve-search-wide" @submit.prevent="state.loadRooms">
+    <form class="panel reserve-search-wide" @submit.prevent="state.searchRooms">
       <div class="reserve-search-head">
         <div>
           <p class="eyebrow">ค้นหาและจองห้อง</p>

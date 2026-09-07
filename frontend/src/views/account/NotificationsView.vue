@@ -32,14 +32,14 @@ function initials(name) {
 
 function userName(item) {
   const text = String(item.message || '').trim();
-  const match = text.match(/^(.+?)\s*[:：|-]\s*(.+)$/);
+  const match = text.match(/^(.+?)(?:\s*[:：|]\s*|\s+-\s+)(.+)$/);
   if (match && match[1].length <= 80) return match[1].trim();
   return item.requester_name || item.user_name || 'ผู้ใช้ทั่วไป';
 }
 
 function cleanMessage(message = '') {
   const text = String(message || '').trim();
-  const match = text.match(/^(.+?)\s*[:：|-]\s*(.+)$/);
+  const match = text.match(/^(.+?)(?:\s*[:：|]\s*|\s+-\s+)(.+)$/);
   return match ? match[2].trim() : text;
 }
 

@@ -1,7 +1,7 @@
 <script setup>
 import { nextTick, ref, watch } from 'vue';
 import { AlertTriangle, CheckCircle2, Info, X } from '@lucide/vue';
-import { dialogState, resolveDialog } from '../dialog.js';
+import { dialogState, resolveDialog } from '../services/dialog.js';
 
 const inputElement = ref(null);
 const confirmButton = ref(null);
