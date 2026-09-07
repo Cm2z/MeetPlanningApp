@@ -39,6 +39,16 @@ try {
   r=await call('user','/api/bookings','POST',booking());const id=r.data.id;
   record('จองเวลาว่าง',date+' ห้อง A 09:00-10:00','HTTP 201 และ pending',r,r.status===201&&r.data.booking?.status==='pending');
   if(!id) throw Error('Initial booking failed');
+  const roomSearch = (day, start, end) => '/api/rooms?' + new URLSearchParams({ date: day, start, end });
+  r = await call('user', '/api/rooms');
+  record('ห้องยังอยู่หลังจอง', 'รายการห้องโดยไม่กรองเวลา', 'ยังพบห้อง A', r, r.status === 200 && r.data.some(room => room.id === 1));
+  r = await call('user', roomSearch(date, '09:30', '10:30'));
+  record('ตรวจเวลาทับซ้อนใน popup', 'ห้อง A มีจอง 09:00–10:00', 'ห้อง A ไม่ว่าง 09:30–10:30', r, r.status === 200 && !r.data.some(room => room.id === 1));
+  r = await call('user', roomSearch(date, '10:00', '11:00'));
+  record('เวลาอื่นวันเดียวกันยังว่าง', 'ห้อง A 10:00–11:00', 'ห้อง A ยังจองได้', r, r.status === 200 && r.data.some(room => room.id === 1));
+  const nextDay = new Date(Date.parse(date) + 86400000).toISOString().slice(0, 10);
+  r = await call('user', roomSearch(nextDay, '09:00', '10:00'));
+  record('เวลาเดิมคนละวันยังว่าง', 'ห้อง A วันถัดไป 09:00–10:00', 'ห้อง A ยังจองได้', r, r.status === 200 && r.data.some(room => room.id === 1));
   for(const [name,start,end] of [['เวลาซ้ำทั้งหมด','09:00:00','10:00:00'],['ทับซ้อนบางส่วน','09:30:00','10:30:00']]){r=await call('user','/api/bookings','POST',booking(1,start,end));const [[c]]=await pool.query('SELECT COUNT(*) n FROM bookings');record(name,date+' ห้อง A '+start+'-'+end,'HTTP 409 และไม่มีรายการเพิ่ม',r,r.status===409&&Number(c.n)===1);}
   r=await call('user','/api/bookings','POST',booking(2));const otherId=r.data.id;record('คนละห้องเวลาเดียวกัน','ห้อง B 09:00-10:00','HTTP 201',r,r.status===201);
   r=await call('user','/api/bookings','POST',booking(1,'10:00:00','11:00:00'));record('ช่วงเวลาติดกัน','ห้อง A 10:00-11:00','HTTP 201',r,r.status===201);

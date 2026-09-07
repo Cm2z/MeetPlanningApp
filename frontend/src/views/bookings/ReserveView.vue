@@ -69,8 +69,13 @@ function hasInvalidTimeRange() {
 }
 
 async function checkRoomAvailability() {
+  const runId = ++availabilityRun;
   const room = props.state.selectedRoom.value;
   if (!room) return false;
+  if (!selectedDateTime(props.state.searchForm.start) || !selectedDateTime(props.state.searchForm.end)) {
+    setAvailability('idle', 'กรุณาเลือกวันที่ เวลาเริ่ม และเวลาสิ้นสุด');
+    return false;
+  }
   if (hasInvalidTimeRange()) {
     setAvailability('busy', 'เวลาเริ่มต้นต้องมาก่อนเวลาสิ้นสุด');
     return false;
@@ -85,7 +90,6 @@ async function checkRoomAvailability() {
     return false;
   }
 
-  const runId = ++availabilityRun;
   setAvailability('checking', 'กำลังตรวจสอบเวลาว่าง...');
   try {
     const params = new URLSearchParams({
@@ -99,7 +103,7 @@ async function checkRoomAvailability() {
       equipment: Array.isArray(props.state.searchForm.equipment) ? props.state.searchForm.equipment.join(',') : '',
     });
     const availableRooms = await api('/rooms?' + params.toString());
-    if (runId !== availabilityRun) return availabilityStatus.value === 'free';
+    if (runId !== availabilityRun) return false;
     const isFree = Array.isArray(availableRooms) && availableRooms.some((item) => Number(item.id) === Number(room.id));
     setAvailability(
       isFree ? 'free' : 'busy',
@@ -113,6 +117,8 @@ async function checkRoomAvailability() {
 }
 
 function scheduleAvailabilityCheck(delay = 350) {
+  availabilityRun++;
+  setAvailability('checking', 'กำลังตรวจสอบเวลาว่าง...');
   window.clearTimeout(availabilityTimer);
   availabilityTimer = window.setTimeout(() => {
     if (showRoomModal.value) checkRoomAvailability();
@@ -145,11 +151,14 @@ watch(showRoomModal, (isOpen) => {
     window.addEventListener('keydown', handleModalKeydown);
     nextTick(() => modalCloseButton.value?.focus());
   } else {
+    availabilityRun++;
+    window.clearTimeout(availabilityTimer);
     window.removeEventListener('keydown', handleModalKeydown);
   }
 });
 
 onBeforeUnmount(() => {
+  availabilityRun++;
   window.clearTimeout(availabilityTimer);
   document.documentElement.classList.remove('room-modal-open');
   document.body.classList.remove('room-modal-open');
@@ -164,7 +173,7 @@ onBeforeUnmount(() => {
         <p class="eyebrow">ค้นหาและจองห้อง</p>
         <h2>เลือกเวลาที่ต้องการ แล้วกดห้องเพื่อดูรายละเอียด</h2>
       </div>
-      <span class="soft-pill">{{ state.rooms.value.length }} ห้องว่าง</span>
+      <span class="soft-pill">{{ state.rooms.value.length }} ห้อง</span>
     </div>
 
     <form class="panel reserve-search-wide" @submit.prevent="state.searchRooms">
@@ -173,7 +182,7 @@ onBeforeUnmount(() => {
           <p class="eyebrow">ค้นหาและจองห้อง</p>
           <h2>เลือกเวลาที่ต้องการ แล้วกดห้องเพื่อดูรายละเอียด</h2>
         </div>
-        <span class="soft-pill">{{ state.rooms.value.length }} ห้องว่าง</span>
+        <span class="soft-pill">{{ state.rooms.value.length }} ห้อง</span>
       </div>
 
       <div class="reserve-search-fields reserve-search-fields-simple">
@@ -187,10 +196,10 @@ onBeforeUnmount(() => {
     <div class="reserve-room-section">
       <div class="section-title-row">
         <div>
-          <p class="eyebrow">ห้องที่พร้อมจอง</p>
+          <p class="eyebrow">ห้องประชุมทั้งหมด</p>
           <h2>กดเลือกห้องเพื่อดูรูปและจอง</h2>
         </div>
-        <p class="muted">ฟอร์มจองจะอยู่ในหน้าต่าง popup เพื่อลดความรกของหน้า</p>
+        <p class="muted">เปิดห้องเพื่อเลือกวันและเวลา ระบบป้องกันการจองเฉพาะช่วงที่ทับซ้อน</p>
       </div>
 
       <div class="room-picker-grid">
@@ -221,7 +230,7 @@ onBeforeUnmount(() => {
         </article>
 
         <div v-if="!state.rooms.value.length" class="panel empty-room-state">
-          ไม่พบห้องตามเงื่อนไขที่ค้นหา ลองเปลี่ยนเวลา วันที่ หรือจำนวนคน
+          ไม่พบห้องตามเงื่อนไขที่ค้นหา ลองเปลี่ยนคำค้นหาหรือจำนวนคน
         </div>
       </div>
     </div>

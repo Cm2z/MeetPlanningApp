@@ -163,9 +163,6 @@ export function useMeetPlanning() {
     try {
       const params = new URLSearchParams({
         keyword: searchForm.keyword || '',
-        date: searchForm.date,
-        start: searchForm.start,
-        end: searchForm.end,
         capacity: String(searchForm.capacity || 1),
         branchId: searchForm.branchId || '',
         building: searchForm.building || '',
