@@ -1,10 +1,15 @@
 <script setup>
-defineProps({
+import { ref, watch } from 'vue';
+import { Eye, EyeOff } from '@lucide/vue';
+
+const props = defineProps({
   state: {
     type: Object,
     required: true
   }
 });
+const showPassword = ref(false);
+watch(() => props.state.authMode.value, () => { showPassword.value = false; });
 </script>
 
 <template>
@@ -75,11 +80,19 @@ defineProps({
             <input v-model="state.loginForm.email" type="email" autocomplete="email" placeholder="name@example.com"
               required />
           </label>
-          <label class="mp-auth-field">
-            <span>รหัสผ่าน</span>
-            <input v-model="state.loginForm.password" type="password" autocomplete="current-password"
-              placeholder="กรอกรหัสผ่าน" required />
-          </label>
+          <div class="mp-auth-field">
+            <label for="login-password">รหัสผ่าน</label>
+            <div class="mp-password-input">
+              <input id="login-password" v-model="state.loginForm.password" :type="showPassword ? 'text' : 'password'" autocomplete="current-password"
+                placeholder="กรอกรหัสผ่าน" required />
+              <button class="mp-password-toggle" type="button" :aria-controls="'login-password'"
+                :aria-label="showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'" :aria-pressed="showPassword"
+                :title="showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'" @click="showPassword = !showPassword">
+                <EyeOff v-if="showPassword" aria-hidden="true" :size="20" />
+                <Eye v-else aria-hidden="true" :size="20" />
+              </button>
+            </div>
+          </div>
           <button class="mp-auth-submit" type="submit">เข้าสู่ระบบ</button>
           <p class="mp-auth-switch">ยังไม่มีบัญชี? <button type="button"
               @click="state.authMode.value = 'register'">สมัครสมาชิก</button></p>
@@ -95,11 +108,19 @@ defineProps({
             <input v-model="state.registerForm.email" type="email" autocomplete="email" placeholder="name@example.com"
               required />
           </label>
-          <label class="mp-auth-field">
-            <span>รหัสผ่าน</span>
-            <input v-model="state.registerForm.password" type="password" autocomplete="new-password" minlength="8" maxlength="128"
-              placeholder="อย่างน้อย 8 ตัวอักษร" required />
-          </label>
+          <div class="mp-auth-field">
+            <label for="register-password">รหัสผ่าน</label>
+            <div class="mp-password-input">
+              <input id="register-password" v-model="state.registerForm.password" :type="showPassword ? 'text' : 'password'" autocomplete="new-password" minlength="8" maxlength="128"
+                placeholder="อย่างน้อย 8 ตัวอักษร" required />
+              <button class="mp-password-toggle" type="button" :aria-controls="'register-password'"
+                :aria-label="showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'" :aria-pressed="showPassword"
+                :title="showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'" @click="showPassword = !showPassword">
+                <EyeOff v-if="showPassword" aria-hidden="true" :size="20" />
+                <Eye v-else aria-hidden="true" :size="20" />
+              </button>
+            </div>
+          </div>
           <label class="mp-auth-field">
             <span>แผนก <small>ไม่บังคับ</small></span>
             <input v-model="state.registerForm.department" placeholder="เช่น บัญชี, บุคคล, IT" />
@@ -114,6 +135,27 @@ defineProps({
 </template>
 
 <style scoped>
+.mp-password-input { position: relative; }
+.mp-auth-field .mp-password-input input { padding-right: 50px; }
+.mp-password-toggle {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #46698f;
+  padding: 0;
+  cursor: pointer;
+}
+.mp-password-toggle:hover { background: #e7f0ff; color: #176bcb; }
+.mp-password-toggle:focus-visible { outline: 2px solid #176bcb; outline-offset: 1px; }
+
 .mp-auth-page {
   min-height: 100svh;
   display: grid;
