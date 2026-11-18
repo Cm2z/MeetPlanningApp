@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 const backendRoot = path.resolve(__dirname, '..', '..');
 const projectRoot = path.resolve(backendRoot, '..');
 
-const coreTables = ['users', 'rooms', 'bookings', 'notifications'];
+const migrationLockName = 'meetplanning:migrate';
 const upgradeFiles = [
   'upgrade_enterprise.sql',
   'upgrade_pro_features.sql',
@@ -92,26 +92,18 @@ function splitSqlStatements(sql) {
   return statements;
 }
 
-async function tableExists(name) {
-  const [rows] = await pool.execute(
-    'SELECT COUNT(*) AS total FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?',
-    [name]
+async function hasAnyTables(connection) {
+  const [rows] = await connection.execute(
+    'SELECT COUNT(*) AS total FROM information_schema.tables WHERE table_schema = DATABASE()'
   );
   return Number(rows[0].total) > 0;
-}
-
-async function hasCoreTables() {
-  for (const table of coreTables) {
-    if (!(await tableExists(table))) return false;
-  }
-  return true;
 }
 
 function isIgnorableMigrationError(error) {
   return safeDuplicateErrorCodes.has(error.code) || safeDuplicateErrnos.has(error.errno);
 }
 
-async function runSqlFile(name, required = false) {
+async function runSqlFile(connection, name, required = false) {
   const file = findSqlFile(name);
   if (!file) {
     const message = 'missing SQL file: ' + name;
@@ -131,7 +123,7 @@ async function runSqlFile(name, required = false) {
   const statements = splitSqlStatements(sql);
   for (const statement of statements) {
     try {
-      await pool.query(statement);
+      await connection.query(statement);
     } catch (error) {
       if (isIgnorableMigrationError(error)) {
         console.log('skip already applied:', error.code || error.errno);
@@ -144,17 +136,36 @@ async function runSqlFile(name, required = false) {
 }
 
 async function main() {
-  if (!(await hasCoreTables())) {
-    await runSqlFile('schema.sql', true);
-  } else {
-    console.log('core tables already exist; skip schema.sql');
-  }
+  const connection = await pool.getConnection();
+  let lockAcquired = false;
+  try {
+    const [lockRows] = await connection.execute('SELECT GET_LOCK(?, 180) AS acquired', [migrationLockName]);
+    if (Number(lockRows[0]?.acquired) !== 1) {
+      throw new Error('Could not acquire the database migration lock');
+    }
+    lockAcquired = true;
 
-  for (const file of upgradeFiles) {
-    await runSqlFile(file);
-  }
+    if (!(await hasAnyTables(connection))) {
+      await runSqlFile(connection, 'schema.sql', true);
+    } else {
+      console.log('database already contains tables; skip destructive schema.sql');
+    }
 
-  console.log('Migration completed');
+    for (const file of upgradeFiles) {
+      await runSqlFile(connection, file);
+    }
+
+    console.log('Migration completed');
+  } finally {
+    if (lockAcquired) {
+      try {
+        await connection.execute('SELECT RELEASE_LOCK(?)', [migrationLockName]);
+      } catch (error) {
+        console.error('Could not release the database migration lock:', error.message);
+      }
+    }
+    connection.release();
+  }
   await pool.end();
 }
 

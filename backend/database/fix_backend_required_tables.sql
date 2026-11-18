@@ -102,11 +102,15 @@ VALUES ('admin', 24, 365, 1, '00:00:00', '23:59:00')
 ON DUPLICATE KEY UPDATE role = role;
 
 ALTER TABLE users
-  ADD COLUMN IF NOT EXISTS status ENUM('active','disabled') NOT NULL DEFAULT 'active' AFTER role,
+  ADD COLUMN IF NOT EXISTS status ENUM('active','disabled') NOT NULL DEFAULT 'active' AFTER role;
+
+ALTER TABLE users
   ADD COLUMN IF NOT EXISTS force_password_change TINYINT(1) NOT NULL DEFAULT 0 AFTER status;
 
 ALTER TABLE rooms
-  ADD COLUMN IF NOT EXISTS branch_id INT NULL AFTER id,
+  ADD COLUMN IF NOT EXISTS branch_id INT NULL AFTER id;
+
+ALTER TABLE rooms
   ADD COLUMN IF NOT EXISTS code VARCHAR(40) NULL AFTER name;
 
 UPDATE rooms SET branch_id = 1 WHERE branch_id IS NULL;
