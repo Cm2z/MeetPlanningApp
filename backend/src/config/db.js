@@ -1,4 +1,3 @@
-
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 
@@ -19,6 +18,12 @@ const databaseConfig = {
   // aligned with the time selected in the browser instead of Railway's UTC.
   timezone: '+07:00'
 };
+
+// TiDB Cloud public endpoints require TLS. Keep it opt-in so local MySQL
+// development continues to work without certificates or extra configuration.
+if (process.env.DB_SSL === 'true') {
+  databaseConfig.ssl = { minVersion: 'TLSv1.2' };
+}
 
 export const pool = mysql.createPool(databaseConfig);
 

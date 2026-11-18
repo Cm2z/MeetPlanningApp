@@ -1,0 +1,49 @@
+services:
+  - type: web
+    name: meetplanning-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm run migrate && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_DELETE_CODE
+        generateValue: true
+      - key: CLIENT_ORIGIN
+        fromService:
+          type: web
+          name: meetplanning-web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "4000"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_SSL
+        value: "true"
+      - key: ALLOW_DATABASE_RESTORE
+        value: "false"
+
+  - type: web
+    name: meetplanning-web
+    runtime: node
+    plan: free
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: API_PROXY_TARGET
+        fromService:
+          type: web
+          name: meetplanning-api
+          envVarKey: RENDER_EXTERNAL_URL
