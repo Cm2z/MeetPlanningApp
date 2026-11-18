@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { pool } from '../config/db.js';
-import bcrypt from 'bcryptjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -136,25 +135,6 @@ async function runSqlFile(connection, name, required = false) {
   }
 }
 
-async function createBootstrapAdmin(connection) {
-  const email = String(process.env.ADMIN_BOOTSTRAP_EMAIL || '').trim().toLowerCase();
-  const password = String(process.env.ADMIN_BOOTSTRAP_PASSWORD || '');
-  if (!email || !password) return;
-
-  const [existing] = await connection.execute('SELECT id FROM users WHERE email = ? LIMIT 1', [email]);
-  if (existing.length) {
-    console.log('Bootstrap administrator already exists; leaving it unchanged');
-    return;
-  }
-
-  const passwordHash = await bcrypt.hash(password, 12);
-  await connection.execute(
-    'INSERT INTO users (name, email, password_hash, role, department, status) VALUES (?, ?, ?, ?, ?, ?)',
-    ['ผู้ดูแลระบบ', email, passwordHash, 'admin', 'IT', 'active']
-  );
-  console.log('Bootstrap administrator created:', email);
-}
-
 async function main() {
   const connection = await pool.getConnection();
   let lockAcquired = false;
@@ -175,7 +155,6 @@ async function main() {
       await runSqlFile(connection, file);
     }
 
-    await createBootstrapAdmin(connection);
     console.log('Migration completed');
   } finally {
     if (lockAcquired) {
