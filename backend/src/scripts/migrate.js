@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { pool } from '../config/db.js';
+import bcrypt from 'bcryptjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -135,6 +136,28 @@ async function runSqlFile(connection, name, required = false) {
   }
 }
 
+async function applyInitialAccounts(connection) {
+  const raw = String(process.env.INITIAL_ACCOUNTS_JSON || '');
+  if (!raw) return;
+
+  const accounts = JSON.parse(raw);
+  if (!Array.isArray(accounts)) throw new Error('INITIAL_ACCOUNTS_JSON must be an array');
+  for (const account of accounts) {
+    const email = String(account.email || '').trim().toLowerCase();
+    const password = String(account.password || '');
+    const role = String(account.role || '');
+    if (!email || password.length < 6 || !['admin', 'user'].includes(role)) {
+      throw new Error('Invalid initial account configuration');
+    }
+    const passwordHash = await bcrypt.hash(password, 12);
+    await connection.execute(
+      'INSERT INTO users (name, email, password_hash, role, department, status) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), password_hash = VALUES(password_hash), role = VALUES(role), department = VALUES(department), status = VALUES(status)',
+      [account.name || (role === 'admin' ? 'ผู้ดูแลระบบ' : 'ผู้ใช้งาน'), email, passwordHash, role, account.department || '', 'active']
+    );
+    console.log('Initial account configured:', email);
+  }
+}
+
 async function main() {
   const connection = await pool.getConnection();
   let lockAcquired = false;
@@ -155,6 +178,7 @@ async function main() {
       await runSqlFile(connection, file);
     }
 
+    await applyInitialAccounts(connection);
     console.log('Migration completed');
   } finally {
     if (lockAcquired) {
