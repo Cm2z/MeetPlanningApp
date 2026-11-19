@@ -79,16 +79,46 @@ export function useMeetPlanning() {
 
   async function api(path, options = {}) {
     const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-    const response = await fetch(REQUEST_API_URL + path, { ...options, headers, credentials: 'include' });
+    const method = String(options.method || 'GET').toUpperCase();
+    const retryable = method === 'GET';
+    const maxRetries = retryable ? 12 : 0;
+    let response = null;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+      try {
+        response = await fetch(REQUEST_API_URL + path, { ...options, headers, credentials: 'include' });
+      } catch (error) {
+        if (!retryable || attempt === maxRetries) {
+          throw new Error('เชื่อมต่อระบบไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+        }
+        await new Promise((resolve) => window.setTimeout(resolve, 3000));
+        continue;
+      }
+
+      if (![502, 503, 504].includes(response.status) || attempt === maxRetries) break;
+      try { await response.body?.cancel(); } catch { /* The failed response body is not needed. */ }
+      await new Promise((resolve) => window.setTimeout(resolve, 3000));
+    }
+
     const text = await response.text();
-    const data = text ? JSON.parse(text) : {};
+    let data = {};
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch {
+      throw new Error(response.status >= 500
+        ? 'ระบบกำลังเริ่มต้น กรุณารอสักครู่แล้วลองใหม่'
+        : 'ระบบตอบกลับไม่ถูกต้อง กรุณารีเฟรชหน้าเว็บ');
+    }
+
     if (!response.ok) {
       if (response.status === 401 && session.value?.user?.role !== 'admin') {
         clearSession();
         view.value = 'auth';
         authMode.value = 'login';
       }
-      throw new Error(data.message || 'เกิดข้อผิดพลาด');
+      throw new Error(data.message || (response.status >= 500
+        ? 'ระบบกำลังเริ่มต้น กรุณารอสักครู่แล้วลองใหม่'
+        : 'เกิดข้อผิดพลาด'));
     }
     return data;
   }
